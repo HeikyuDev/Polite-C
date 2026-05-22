@@ -1,15 +1,20 @@
-````md
 # Polite C Compiler
 
-Polite C Compiler es una aplicación web desarrollada con Django para interpretar y analizar código escrito en **Polite C**, un mini-lenguaje de programación orientado a objetos con sintaxis conversacional.
+**Polite C Compiler** es una aplicación web desarrollada con **Django** para analizar código escrito en **Polite C**, un mini-lenguaje de programación orientado a objetos con sintaxis conversacional.
 
-El objetivo del proyecto es simular el funcionamiento básico de un compilador, donde el cliente envía una cadena de caracteres que representa el código fuente escrito por el usuario, y el servidor se encarga de procesarla mediante un analizador léxico y, posteriormente, un analizador sintáctico.
+El proyecto simula el funcionamiento básico de un compilador: el cliente envía una cadena de caracteres que representa el código fuente, y el servidor procesa esa entrada mediante un analizador léxico y un analizador sintáctico.
+
+---
 
 ## Descripción del proyecto
 
-Polite C es un mini-lenguaje diseñado con fines educativos. Su sintaxis está inspirada en lenguajes como C y Java, pero reemplaza parte de la simbología tradicional por expresiones más legibles y conversacionales.
+**Polite C** es un mini-lenguaje diseñado con fines educativos. Su sintaxis está inspirada en lenguajes como **C** y **Java**, pero reemplaza parte de la simbología tradicional por expresiones más legibles y conversacionales.
 
-Ejemplo de código Polite C:
+El objetivo principal es facilitar la comprensión de conceptos relacionados con lenguajes formales, análisis léxico, análisis sintáctico y gramáticas libres de contexto.
+
+---
+
+## Ejemplo de código Polite C
 
 ```txt
 Class GeneradorDeMensajes please do this
@@ -31,29 +36,35 @@ hello main! please do this
     please create miGenerador as GeneradorDeMensajes
     please ask miGenerador to procesarDato
 thanks!
-````
+```
+
+---
 
 ## Funcionalidades principales
 
-* Recepción de código fuente Polite C desde el cliente.
-* Procesamiento del código en el servidor.
-* Identificación de tokens mediante un analizador léxico.
-* Preparación para análisis sintáctico mediante una gramática libre de contexto.
-* Separación del proyecto en capas para facilitar el mantenimiento.
-* Base para construir una interfaz tipo mini IDE.
+- Recepción de código fuente Polite C desde el cliente.
+- Procesamiento del código en el servidor.
+- Identificación de tokens mediante un analizador léxico.
+- Preparación para el análisis sintáctico mediante una gramática libre de contexto.
+- Separación del proyecto en módulos para facilitar el mantenimiento.
+- Base para construir una interfaz web tipo mini IDE.
+
+---
 
 ## Tecnologías utilizadas
 
-* Python
-* Django
-* HTML
-* CSS
-* JavaScript
+- Python
+- Django
+- HTML
+- CSS
+- JavaScript
+
+---
 
 ## Estructura sugerida del proyecto
 
 ```txt
-polite-c/
+Polite-C/
 │
 ├── config/
 │   ├── settings.py
@@ -84,13 +95,15 @@ polite-c/
 └── README.md
 ```
 
+---
+
 ## Instalación y ejecución
 
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/HeikyuDev/Polite-C
-cd polite-c
+git clone https://github.com/HeikyuDev/Polite-C.git
+cd Polite-C
 ```
 
 ### 2. Crear el entorno virtual
@@ -99,6 +112,12 @@ En Windows:
 
 ```bash
 python -m venv venv
+```
+
+En Linux o macOS:
+
+```bash
+python3 -m venv venv
 ```
 
 ### 3. Activar el entorno virtual
@@ -127,7 +146,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Si todavía no existe el archivo `requirements.txt`, se puede generar con:
+Si el archivo `requirements.txt` todavía no existe, se puede generar con:
 
 ```bash
 pip freeze > requirements.txt
@@ -151,6 +170,8 @@ Luego abrir en el navegador:
 http://127.0.0.1:8000/
 ```
 
+---
+
 ## Entorno virtual y Git
 
 La carpeta del entorno virtual no debe subirse al repositorio. Por eso debe estar incluida en el archivo `.gitignore`.
@@ -158,14 +179,29 @@ La carpeta del entorno virtual no debe subirse al repositorio. Por eso debe esta
 Ejemplo:
 
 ```gitignore
+# Entorno virtual
 venv/
 .venv/
 env/
+
+# Python
 __pycache__/
 *.py[cod]
+*.pyo
+
+# Django
 db.sqlite3
+*.log
+
+# Variables de entorno
 .env
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
 ```
+
+---
 
 ## Flujo general de funcionamiento
 
@@ -185,16 +221,20 @@ Analizador sintáctico
 Resultado del análisis o mensajes de error
 ```
 
+---
+
 ## Objetivo académico
 
-Este proyecto forma parte del desarrollo de un mini-lenguaje orientado a objetos para aplicar conceptos de Teoría de la Computación, principalmente:
+Este proyecto forma parte del desarrollo de un mini-lenguaje orientado a objetos para aplicar conceptos de **Teoría de la Computación**, principalmente:
 
-* definición de tokens;
-* expresiones regulares;
-* análisis léxico;
-* autómatas finitos;
-* gramáticas libres de contexto;
-* análisis sintáctico.
+- definición y clasificación de tokens;
+- expresiones regulares;
+- análisis léxico;
+- autómatas finitos;
+- gramáticas libres de contexto;
+- análisis sintáctico.
+
+---
 
 ## Estado del proyecto
 
@@ -202,12 +242,9 @@ Proyecto en desarrollo.
 
 Actualmente se está preparando la base del servidor Django y la estructura necesaria para implementar el analizador léxico y el analizador sintáctico de Polite C.
 
+---
+
 ## Autores
 
-Grupo 04 - Teoría de la Computación
+**Grupo 04 - Teoría de la Computación**  
 Universidad Nacional de Misiones
-
-```
-
-Hay una sola cosa que tenés que cambiar: donde dice `https://github.com/usuario/polite-c.git`, poné la URL real de tu repositorio.
-```
