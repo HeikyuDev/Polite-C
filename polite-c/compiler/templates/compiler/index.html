@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Polite C - Mini IDE</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 20px; }
+        .ide-container { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; gap: 15px; }
+        h1 { color: #2c3e50; text-align: center; }
+        textarea { width: 100%; font-family: 'Courier New', Courier, monospace; font-size: 14px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        #editor { height: 300px; background-color: #fff; color: #333; }
+        #console { height: 150px; background-color: #1e1e1e; color: #a6e22e; border: none; white-space: pre-wrap; }
+        button { background-color: #27ae60; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; align-self: flex-end; }
+        button:hover { background-color: #219150; }
+    </style>
+</head>
+<body>
+
+<div class="ide-container">
+    <h1>Polite C (PC) Interactive IDE</h1>
+    
+    <textarea id="editor" placeholder="Escribe tu código cortés aquí...">!comment: "Mi primer programa en Polite C"
+
+hello main! please do this:
+    please say: "Hola Mundo desde el mini IDE"
+thanks!</textarea>
+    
+    <button onclick="executeCode()">Ejecutar Código</button>
+    
+    <h3>Consola de Salida</h3>
+    <textarea id="console" readonly placeholder="Los resultados aparecerán aquí..."></textarea>
+</div>
+
+<script>
+function executeCode() {
+    const codeContent = document.getElementById('editor').value;
+    const consoleOutput = document.getElementById('console');
+    
+    consoleOutput.value = "Compilando de forma educada...\n";
+    
+    // Preparar los datos simulando un formulario clásico (requerido por Django)
+    const formData = new FormData();
+    formData.append('code', codeContent);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}'); // Seguridad de Django
+
+    fetch('/run/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            consoleOutput.value = data.output;
+        } else {
+            consoleOutput.value = "Error en el servidor al intentar procesar el código.";
+        }
+    })
+    .catch(error => {
+        consoleOutput.value = "Error de red: " + error;
+    });
+}
+</script>
+
+</body>
+</html>
