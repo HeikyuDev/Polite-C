@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Polite C - Mini IDE</title>
+    <title>Polite C - Mini IDE (En desarrollo...)</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 20px; }
         .ide-container { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; gap: 15px; }
@@ -32,31 +32,50 @@ thanks!</textarea>
 </div>
 
 <script>
-function executeCode() {
+    // Almacén temporal de las variables que el usuario va ingresando en esta ejecución
+let currentInputs = {};
+
+function executeCode(resumeVariable = null, resumeValue = null) {
     const codeContent = document.getElementById('editor').value;
     const consoleOutput = document.getElementById('console');
     
-    consoleOutput.value = "Compilando de forma educada...\n";
+    // Si estamos reanudando porque el usuario nos dio un dato, lo guardamos
+    if (resumeVariable && resumeValue !== null) {
+        currentInputs[resumeVariable] = resumeValue;
+    } else {
+        // Si es una ejecución completamente nueva desde el botón, limpiamos la memoria anterior
+        currentInputs = {};
+        consoleOutput.value = "Compilando de forma educada...\n";
+    }
     
-    // Preparar los datos simulando un formulario clásico (requerido por Django)
     const formData = new FormData();
     formData.append('code', codeContent);
-    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}'); // Seguridad de Django
+    // Convertimos nuestro mapa de inputs a texto para enviarlo a Django
+    formData.append('inputs', JSON.stringify(currentInputs));
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
-    fetch('/run/', {
+    fetch('/run/', {  // Ajustá esta URL a tu ruta de Django
         method: 'POST',
         body: formData
     })
     .then(response => response.json())
     .then(data => {
-        if(data.success) {
-            consoleOutput.value = data.output;
-        } else {
-            consoleOutput.value = "Error en el servidor al intentar procesar el código.";
+        // Actualizamos la consola con lo que lleve procesado el programa
+        consoleOutput.value = data.output;
+        
+        // ¿El intérprete de Python se detuvo esperando una entrada por teclado?
+        if (data.status === 'awaiting_input') {
+            // Le pedimos amigablemente el dato al estudiante mediante el navegador
+            const userInput = prompt(`[Polite C Input Required]\nPor favor, introduce un valor para la variable: ${data.variable}`);
+            
+            // Reanudamos la ejecución automáticamente enviando el nuevo dato
+            executeCode(data.variable, userInput);
+        } else if (data.status === 'completed') {
+            consoleOutput.value += "\n\n--- Ejecución terminada con éxito. ¡Gracias! ---";
         }
     })
     .catch(error => {
-        consoleOutput.value = "Error de red: " + error;
+        consoleOutput.value = "Error de comunicación: " + error;
     });
 }
 </script>
