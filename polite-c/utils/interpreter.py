@@ -33,25 +33,36 @@ class PoliteInterpreter:
                 break
                 
             if in_main_block:
-                # --- BLOQUE DE DEFINICIÓN DE VARIABLES ---
-                if line == "please define:(":
-                    in_define_block = True
-                    continue
-                if line == ")" and in_define_block:
-                    in_define_block = False
-                    continue
-                    
-                if in_define_block:
-                    decl = PoliteLexer.parse_declaration(line)
-                    if decl:
-                        var_name, var_type = decl
-                        # Inicializamos la variable en nuestra memoria según su tipo
-                        if var_name not in self.variables:
-                            if var_type == 'number': self.variables[var_name] = 0
-                            elif var_type == 'floatnumber': self.variables[var_name] = 0.0
-                            elif var_type == 'word': self.variables[var_name] = ""
-                    else:
-                        self.output_buffer.append(f"Error (Línea {line_num}): Declaración inválida en el bloque define.")
+
+                # --- DECLARACIÓN DE VARIABLES ---
+                # Valores por defecto para cada tipo
+                DEFAULT_VALUES = {
+                    "number": 0,
+                    "floatnumber": 0.0,
+                    "word": ""
+                }
+                decl = PoliteLexer.parse_declaration(line)
+
+                if decl:
+                    var_name, var_type = decl
+
+                    # Evitar redeclaraciones
+                    if var_name in self.variables:
+                        self.output_buffer.append(
+                            f"Error (Línea {line_num}): La variable '{var_name}' ya existe."
+                        )
+                        continue
+
+                    # Inicialización según tipo
+                    if var_type == 'number':
+                        self.variables[var_name] = DEFAULT_VALUES[var_type]
+
+                    elif var_type == 'floatnumber':
+                        self.variables[var_name] = DEFAULT_VALUES[var_type]
+
+                    elif var_type == 'word':
+                        self.variables[var_name] = DEFAULT_VALUES[var_type]
+
                     continue
 
                 # --- COMANDO DE ENTRADA (please read:) ---
@@ -77,6 +88,48 @@ class PoliteInterpreter:
                             'variable': var_name,
                             'output': "\n".join(self.output_buffer)
                         }
+                # --- ASIGNACIONES ---
+                assign = PoliteLexer.parse_assignment(line)
+
+                if assign:
+                    var_name, raw_value = assign
+
+                    # Verificar que exista la variable
+                    if var_name not in self.variables:
+                        self.output_buffer.append(
+                            f"Error (Línea {line_num}): Variable '{var_name}' no definida."
+                        )
+                        continue
+
+                    current_value = self.variables[var_name]
+
+                    try:
+
+                        # NUMBER
+                        if isinstance(current_value, int):
+                            self.variables[var_name] = int(raw_value)
+
+                        # FLOAT
+                        elif isinstance(current_value, float):
+                            self.variables[var_name] = float(raw_value)
+
+                        # WORD
+                        elif isinstance(current_value, str):
+
+                            # Validar comillas
+                            if raw_value.startswith('"') and raw_value.endswith('"'):
+                                self.variables[var_name] = raw_value[1:-1]
+                            else:
+                                self.output_buffer.append(
+                                    f'Error (Línea {line_num}): Los textos deben ir entre comillas.'
+                                )
+
+                    except ValueError:
+                        self.output_buffer.append(
+                            f"Error (Línea {line_num}): Valor inválido para '{var_name}'."
+                        )
+
+                    continue
 
                 # --- COMANDO DE SALIDA (please say:) CON SOPORTE PARA VARIABLES ---
                 elif line.startswith("please say:"):
