@@ -3,22 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title>PC - Mini IDE</title>
-    <link rel="icon" type="image/x-icon" href="/ide-icon.ico">
+    <link rel="shortcut icon" href="../static/icon.png" type="image/png">    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: #f4f6f9; 
-            margin: 20px; 
+            margin: 10px; 
+            padding: 0;
         }
         .ide-container { 
             display: flex; 
             flex-direction: column; 
-            max-width: 1000px; 
+            max-width: 1200px; 
             margin: 0 auto; 
-            gap: 15px; 
+            gap: 12px; 
         }
-        h1 { color: #2c3e50; text-align: center; margin-bottom: 10px; }
+        h1 { 
+            color: #2c3e50; 
+            text-align: center; 
+            margin-bottom: 10px; 
+            font-size: 24px;
+        }
         
         .editor-wrapper {
             display: flex;
@@ -93,7 +99,7 @@
         
         .controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             justify-content: flex-end;
             flex-wrap: wrap;
             align-items: center;
@@ -103,17 +109,34 @@
             background-color: #27ae60;
             color: white;
             border: none;
-            padding: 12px 20px;
-            font-size: 16px;
+            padding: 10px 16px;
+            font-size: 14px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
             transition: background-color 0.3s;
+            white-space: nowrap;
         }
         
         button:hover { background-color: #219150; }
         
         button:active { transform: scale(0.98); }
+        
+        button.secondary {
+            background-color: #3498db;
+        }
+        
+        button.secondary:hover { background-color: #2980b9; }
+        
+        button.danger {
+            background-color: #e74c3c;
+        }
+        
+        button.danger:hover { background-color: #c0392b; }
+        
+        #fileInput {
+            display: none;
+        }
         
         .status-info {
             font-size: 12px;
@@ -141,13 +164,134 @@
         .error-line {
             background-color: #ffcccc;
         }
+        
+        /* Media Queries para Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                margin: 5px;
+            }
+            
+            .ide-container {
+                max-width: 100%;
+                gap: 10px;
+            }
+            
+            h1 {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+            
+            h3 {
+                font-size: 16px;
+            }
+            
+            #lineNumbers {
+                font-size: 12px;
+                padding: 8px 5px;
+                min-width: 35px;
+            }
+            
+            #editor {
+                height: 250px;
+                font-size: 12px;
+                padding: 8px;
+            }
+            
+            #highlighter {
+                font-size: 12px;
+                padding: 8px;
+            }
+            
+            #console {
+                height: 150px;
+                font-size: 11px;
+                padding: 8px;
+            }
+            
+            .controls {
+                gap: 5px;
+                justify-content: center;
+            }
+            
+            button {
+                padding: 8px 12px;
+                font-size: 12px;
+                flex: 1;
+                min-width: 80px;
+            }
+            
+            .editor-wrapper {
+                gap: 0;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                margin: 3px;
+            }
+            
+            .ide-container {
+                gap: 8px;
+            }
+            
+            h1 {
+                font-size: 18px;
+                margin-bottom: 6px;
+            }
+            
+            h3 {
+                font-size: 14px;
+                margin-top: 10px;
+            }
+            
+            #lineNumbers {
+                font-size: 10px;
+                padding: 6px 4px;
+                min-width: 30px;
+            }
+            
+            #editor {
+                height: 200px;
+                font-size: 11px;
+                padding: 6px;
+                line-height: 1.4;
+            }
+            
+            #highlighter {
+                font-size: 11px;
+                padding: 6px;
+            }
+            
+            #console {
+                height: 120px;
+                font-size: 10px;
+                padding: 6px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 6px;
+                justify-content: stretch;
+            }
+            
+            button {
+                width: 100%;
+                padding: 10px 8px;
+                font-size: 11px;
+            }
+            
+            .status-info {
+                font-size: 10px;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="ide-container">
-    <h1>Polite C (PC) Interactive IDE</h1>
-    
+<a href="/">
+  <img src="../static/logo.png" alt="Polite-C" style="display: block; margin: 0 auto; width: auto; height: auto;">
+</a>
     <div class="editor-wrapper">
         <div id="lineNumbers"></div>
         <div id="editorContainer">
@@ -160,9 +304,16 @@ thanks!</textarea>
         </div>
     </div>
     
-    <div class="controls">
-        <button onclick="executeCode()">▶ Ejecutar Código</button>
-        <button onclick="clearConsole()" style="background-color: #e74c3c;">🗑 Limpiar</button>    </div>
+<div class="controls" style="display: flex; width: 100%; gap: 10px;">
+    <button class="secondary" onclick="importCode()" title="Importar código desde un archivo .txt">Importar</button>
+    <!-- Agregamos el margen automático a este segundo botón -->
+    <button class="secondary" onclick="exportCode()" title="Exportar código como archivo .txt" style="margin-right: auto;">Exportar</button>
+    
+    <button onclick="executeCode()" title="Ejecutar el código (Ctrl+Enter)">▶ Ejecutar</button>
+    <button class="danger" onclick="clearConsole()" title="Limpiar la consola">🗑 Limpiar</button>
+</div>
+    
+    <input type="file" id="fileInput" accept=".txt" onchange="handleFileImport(event)">
     
     <h3>Consola de Salida:</h3>
     <textarea id="console" readonly placeholder="Los resultados aparecerán aquí..."></textarea>
@@ -340,6 +491,51 @@ thanks!</textarea>
     // Limpiar consola
     function clearConsole() {
         consoleOutput.value = '';
+    }
+    
+    // Importar código desde archivo .txt
+    function importCode() {
+        document.getElementById('fileInput').click();
+    }
+    
+    // Manejar la importación de archivo
+    function handleFileImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                editor.value = e.target.result;
+                updateLineNumbers();
+                updateHighlighting();
+                consoleOutput.value = `✅ Archivo "${file.name}" importado exitosamente.`;
+            } catch (error) {
+                consoleOutput.value = `❌ Error al importar el archivo: ${error.message}`;
+            }
+        };
+        reader.onerror = function() {
+            consoleOutput.value = '❌ Error al leer el archivo.';
+        };
+        reader.readAsText(file);
+        
+        // Limpiar el input para permitir reimportar el mismo archivo
+        event.target.value = '';
+    }
+    
+    // Exportar código como archivo .txt
+    function exportCode() {
+        const codeContent = editor.value;
+        const blob = new Blob([codeContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'codigo_polite_c.txt';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        consoleOutput.value = '✅ Código exportado como "codigo_polite_c.txt".';
     }
     
     // Inicialización
