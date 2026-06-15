@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from utils.interpreter import PoliteInterpreter
 
+
 def ide_home(request):
     """
     Renderiza la interfaz principal del Mini IDE para el estudiante.
