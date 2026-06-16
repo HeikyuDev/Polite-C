@@ -2,7 +2,7 @@ import ply.yacc as yacc
 from .lexer import tokens, get_lexer
 
 # ----------------------------------------------------------------------
-# 1. GRAMÁTICA CON SOPORTE MULTI-PARÁMETRO EN IMPRESIÓN
+# 1. GRAMÁTICA CON SOPORTE MULTI-PARÁMETRO EN IMPRESIÓN (ELEGANTES BNF)
 # ----------------------------------------------------------------------
 
 def p_program(p):
@@ -55,7 +55,7 @@ def p_type(p):
             | ID'''
     p[0] = p[1]
 
-# REGLA ARREGLADA: Ahora acepta listas de parámetros separadas por comas
+# REGLA ADAPTADA A LA SECCIÓN 5.4.10: Soporta expresiones infinitas separadas por comas
 def p_statement_say(p):
     '''statement_say : PLEASE_SAY expression_list'''
     p[0] = ('say', p[2])
@@ -219,7 +219,7 @@ def p_error(p):
         parser_errors.append("Error de sintaxis: Fin de archivo inesperado. ¿Olvidaste cerrar el bloque de forma educada?")
 
 # ----------------------------------------------------------------------
-# 2. MOTOR DE EJECUCIÓN (INTÉRPRETE)
+# 2. MOTOR DE EJECUCIÓN DIRECTA (INTÉRPRETE RECURSIVO CONCATENADOR)
 # ----------------------------------------------------------------------
 
 class PoliteInterpreter:
@@ -253,7 +253,8 @@ class PoliteInterpreter:
     def evaluate_expression(self, expr):
         if expr[0] == 'literal':
             val = expr[1]
-            if isinstance(val, str) and val.startswith('"'): return val[1:-1]
+            if isinstance(val, str) and val.startswith('"'):
+                return val[1:-1]
             return val
         elif expr[0] == 'variable':
             return self.variables.get(expr[1], 0)
@@ -296,7 +297,7 @@ class PoliteInterpreter:
                     else: self.variables[var_name] = ""
                     
             elif stmt_type == 'say':
-                # PROCESAMIENTO MULTI-PARÁMETRO: Evalúa y concatena la lista de expresiones
+                # EVALUACIÓN MULTI-PARÁMETRO: Evalúa cada expresión de la lista y las concatena
                 expr_list = stmt[1]
                 val_strs = [str(self.evaluate_expression(e)) for e in expr_list]
                 self.output_buffer.append("".join(val_strs))

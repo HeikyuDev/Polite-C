@@ -1,6 +1,6 @@
 import ply.lex as lex
 
-# Palabras reservadas simples
+# Diccionario de palabras reservadas simples
 reserved = {
     'as': 'AS',
     'number': 'TYPE_NUMBER',
@@ -18,7 +18,7 @@ reserved = {
     'please': 'PLEASE',
 }
 
-# Catálogo unificado de tokens
+# Catálogo general de tokens sintácticos (Machea al 100% con la sección 5.1 del Word)
 tokens = [
     'ID', 'WORD_LITERAL', 'NUMBER_LITERAL', 'FLOAT_LITERAL',
     'LPAREN', 'RPAREN', 'COMMA', 'ASSIGN',
@@ -29,7 +29,7 @@ tokens = [
     'PLEASE_GIVE_BACK', 'PLEASE_CREATE', 'PLEASE_ASK', 'TO_GIVE'
 ] + list(set(reserved.values()))
 
-# Expresiones regulares para tokens compuestos
+# Expresiones regulares para los tokens compuestos prioritarios
 def t_HELLO_MAIN(t):
     r'hello\s+main\s*!'
     return t
@@ -116,7 +116,7 @@ def t_COMMENT(t):
     r'!comment:?\s*\"([^\\\"]|\\.)*\"'
     pass
 
-# ELIMINADO EL DOS PUNTOS: Solo se ignoran espacios, tabs y retornos
+# ESTRICTO: Solo se ignoran espacios, tabulaciones y retornos de carro. Nada de dos puntos sueltos.
 t_ignore = ' \t\r'
 
 def t_newline(t):
