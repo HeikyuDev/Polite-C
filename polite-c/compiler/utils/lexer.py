@@ -1,48 +1,84 @@
 import ply.lex as lex
 
-# Diccionario unificado de palabras reservadas estrictas de la Parte 1
+# Palabras reservadas simples
 reserved = {
-    'hello': 'HELLO',
-    'main': 'MAIN',
-    'please': 'PLEASE',
-    'do': 'DO',
-    'this': 'THIS',
-    'define': 'DEFINE',
     'as': 'AS',
     'number': 'TYPE_NUMBER',
     'floatnumber': 'TYPE_FLOAT',
     'word': 'TYPE_WORD',
-    'say': 'SAY',
-    'read': 'READ',
-    'if': 'IF',
-    'happens': 'HAPPENS',
-    'not': 'NOT',
-    'thanks': 'THANKS',
-    'make': 'MAKE',
-    'equals': 'EQUALS',
-    'to': 'TO',
     'Class': 'CLASS',
     'class': 'CLASS',
     'finish': 'FINISH',
     'receives': 'RECEIVES',
-    'recieves': 'RECEIVES',  # Soporte preventivo ante errores de tipeo
-    'give': 'GIVE',
-    'back': 'BACK',
-    'create': 'CREATE',
-    'ask': 'ASK',
+    'recieves': 'RECEIVES',
     'with': 'WITH',
+    'to': 'TO',
+    'make': 'MAKE',
+    'equals': 'EQUALS',
+    'please': 'PLEASE',
 }
 
-# Definición del catálogo general de tokens sintácticos
+# Catálogo unificado de tokens
 tokens = [
     'ID', 'WORD_LITERAL', 'NUMBER_LITERAL', 'FLOAT_LITERAL',
-    'EXCLAMATION', 'LPAREN', 'RPAREN', 'COMMA', 'ASSIGN',
+    'LPAREN', 'RPAREN', 'COMMA', 'ASSIGN',
     'PLUS', 'MINUS', 'MULT', 'DIV', 'MOD',
-    'EQ', 'NE', 'LT', 'GT', 'LE', 'GE'
+    'EQ', 'NE', 'LT', 'GT', 'LE', 'GE',
+    'HELLO_MAIN', 'THANKS', 'PLEASE_DO_THIS', 'PLEASE_DEFINE',
+    'PLEASE_SAY', 'PLEASE_READ', 'IF_HAPPENS', 'IF_NOT',
+    'PLEASE_GIVE_BACK', 'PLEASE_CREATE', 'PLEASE_ASK', 'TO_GIVE'
 ] + list(set(reserved.values()))
 
-# Expresiones regulares para símbolos y operadores permitidos
-t_EXCLAMATION = r'!'
+# Expresiones regulares para tokens compuestos
+def t_HELLO_MAIN(t):
+    r'hello\s+main\s*!'
+    return t
+
+def t_THANKS(t):
+    r'thanks\s*!'
+    return t
+
+def t_PLEASE_DO_THIS(t):
+    r'please\s+do\s+this'
+    return t
+
+def t_PLEASE_DEFINE(t):
+    r'please\s+define'
+    return t
+
+def t_PLEASE_SAY(t):
+    r'please\s+say'
+    return t
+
+def t_PLEASE_READ(t):
+    r'please\s+read'
+    return t
+
+def t_IF_HAPPENS(t):
+    r'if\s+this\s+happens'
+    return t
+
+def t_IF_NOT(t):
+    r'if\s+not'
+    return t
+
+def t_PLEASE_GIVE_BACK(t):
+    r'please\s+give\s+back'
+    return t
+
+def t_PLEASE_CREATE(t):
+    r'please\s+create'
+    return t
+
+def t_PLEASE_ASK(t):
+    r'please\s+ask'
+    return t
+
+def t_TO_GIVE(t):
+    r'to\s+give'
+    return t
+
+# Símbolos estándar
 t_LPAREN      = r'\('
 t_RPAREN      = r'\)'
 t_COMMA       = r','
@@ -59,10 +95,8 @@ t_GE          = r'>='
 t_LT          = r'<'
 t_GT          = r'>'
 
-# Captura de cadenas de texto literales (entre comillas)
 t_WORD_LITERAL = r'\"([^\\\"]|\\.)*\"'
 
-# Reconocimiento y casteo dinámico de constantes numéricas
 def t_FLOAT_LITERAL(t):
     r'\d+\.\d+'
     t.value = float(t.value)
@@ -73,26 +107,22 @@ def t_NUMBER_LITERAL(t):
     t.value = int(t.value)
     return t
 
-# Reconocimiento de identificadores y mapeo de palabras reservadas
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z0-9_]*'
     t.type = reserved.get(t.value, 'ID')
     return t
 
-# Ignorar comentarios estructurados !comment: "..."
 def t_COMMENT(t):
-    r'!comment:\s*\"([^\\\"]|\\.)*\"'
+    r'!comment:?\s*\"([^\\\"]|\\.)*\"'
     pass
 
-# Caracteres en blanco ignorados de manera continua por la RAM
+# ELIMINADO EL DOS PUNTOS: Solo se ignoran espacios, tabs y retornos
 t_ignore = ' \t\r'
 
-# Contador nativo de líneas del sistema
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
-# Gestión formal de errores léxicos de cortesía
 lexer_errors = []
 def t_error(t):
     lexer_errors.append(f"Mala educación léxica: Carácter inválido '{t.value[0]}' en la línea {t.lineno}")

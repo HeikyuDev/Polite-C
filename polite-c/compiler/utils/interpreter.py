@@ -2,7 +2,7 @@ import ply.yacc as yacc
 from .lexer import tokens, get_lexer
 
 # ----------------------------------------------------------------------
-# 1. ESPECIFICACIÓN GRAMATICAL DE POLITE C (REGLAS BNF)
+# 1. GRAMÁTICA CON SOPORTE MULTI-PARÁMETRO EN IMPRESIÓN
 # ----------------------------------------------------------------------
 
 def p_program(p):
@@ -17,16 +17,13 @@ def p_class_list(p):
     '''class_list : class_definition class_list'''
     p[0] = [p[1]] + p[2]
 
-# ÍNDICES CORREGIDOS: 
-# 1:CLASS, 2:ID, 3:PLEASE, 4:DO, 5:THIS, 6:statement_list, 7:FINISH
 def p_class_definition(p):
-    '''class_definition : CLASS ID PLEASE DO THIS statement_list FINISH'''
-    p[0] = ('class_def', p[2], p[6])
+    '''class_definition : CLASS ID PLEASE_DO_THIS statement_list FINISH'''
+    p[0] = ('class_def', p[2], p[4])
 
 def p_main_block(p):
-    '''main_block : HELLO MAIN EXCLAMATION PLEASE DO THIS statement_list THANKS EXCLAMATION
-                  | HELLO MAIN EXCLAMATION PLEASE DO THIS statement_list THANKS'''
-    p[0] = ('main_block', p[6])
+    '''main_block : HELLO_MAIN PLEASE_DO_THIS statement_list THANKS'''
+    p[0] = ('main_block', p[3])
 
 def p_statement_list_empty(p):
     '''statement_list : empty'''
@@ -48,8 +45,8 @@ def p_statement(p):
     p[0] = p[1]
 
 def p_statement_define(p):
-    '''statement_define : PLEASE DEFINE ID AS type'''
-    p[0] = ('define_var', p[3], p[5])
+    '''statement_define : PLEASE_DEFINE ID AS type'''
+    p[0] = ('define_var', p[2], p[4])
 
 def p_type(p):
     '''type : TYPE_NUMBER
@@ -58,39 +55,40 @@ def p_type(p):
             | ID'''
     p[0] = p[1]
 
+# REGLA ARREGLADA: Ahora acepta listas de parámetros separadas por comas
 def p_statement_say(p):
-    '''statement_say : PLEASE SAY expression'''
-    p[0] = ('say', p[3])
+    '''statement_say : PLEASE_SAY expression_list'''
+    p[0] = ('say', p[2])
 
 def p_statement_read(p):
-    '''statement_read : PLEASE READ ID'''
-    p[0] = ('read', p[3])
+    '''statement_read : PLEASE_READ ID'''
+    p[0] = ('read', p[2])
 
 def p_statement_assign_conversational(p):
-    '''statement_assign : PLEASE MAKE ID EQUALS TO expression'''
-    p[0] = ('assign', p[3], p[6])
+    '''statement_assign : PLEASE MAKE ID EQUALS TO expression
+                        | MAKE ID EQUALS TO expression'''
+    if len(p) == 7: p[0] = ('assign', p[3], p[6])
+    else: p[0] = ('assign', p[2], p[5])
 
 def p_statement_assign_direct(p):
     '''statement_assign : ID ASSIGN expression'''
     p[0] = ('assign', p[1], p[3])
 
 def p_statement_create(p):
-    '''statement_create : PLEASE CREATE ID AS ID'''
-    p[0] = ('create_obj', p[3], p[5])
+    '''statement_create : PLEASE_CREATE ID AS ID'''
+    p[0] = ('create_obj', p[2], p[4])
 
 def p_statement_ask(p):
-    '''statement_ask : PLEASE ASK ID TO ID argument_list'''
-    p[0] = ('ask_method', p[3], p[5], p[6])
+    '''statement_ask : PLEASE_ASK ID TO ID argument_list'''
+    p[0] = ('ask_method', p[2], p[4], p[5])
 
-# ÍNDICES CORREGIDOS: statement_list está en la posición 9
 def p_method_definition_no_return(p):
-    '''method_definition : ID RECEIVES LPAREN param_list RPAREN PLEASE DO THIS statement_list FINISH'''
-    p[0] = ('method_def_no_return', p[1], p[4], p[9])
+    '''method_definition : ID RECEIVES LPAREN param_list RPAREN PLEASE_DO_THIS statement_list FINISH'''
+    p[0] = ('method_def_no_return', p[1], p[4], p[7])
 
-# ÍNDICES CORREGIDOS: type(8), statement_list(12), expression(16)
 def p_method_definition_with_return(p):
-    '''method_definition : ID RECEIVES LPAREN param_list RPAREN TO GIVE type PLEASE DO THIS statement_list PLEASE GIVE BACK expression FINISH'''
-    p[0] = ('method_def_with_return', p[1], p[4], p[8], p[12], p[16])
+    '''method_definition : ID RECEIVES LPAREN param_list RPAREN TO_GIVE type PLEASE_DO_THIS statement_list PLEASE_GIVE_BACK expression FINISH'''
+    p[0] = ('method_def_with_return', p[1], p[4], p[7], p[9], p[11])
 
 def p_param_list_empty(p):
     '''param_list : empty'''
@@ -136,18 +134,17 @@ def p_resto_expr(p):
     '''resto_expr : COMMA expression resto_expr'''
     p[0] = [p[2]] + p[3]
 
-# ÍNDICES CORREGIDOS: rel_op(5), statement_list(10), else_block(11)
 def p_statement_if(p):
-    '''statement_if : IF THIS HAPPENS LPAREN expression_relational RPAREN PLEASE DO THIS statement_list else_block FINISH'''
-    p[0] = ('if_block', p[5], p[10], p[11])
+    '''statement_if : IF_HAPPENS LPAREN expression_relational RPAREN PLEASE_DO_THIS statement_list else_block FINISH'''
+    p[0] = ('if_block', p[3], p[6], p[7])
 
 def p_else_block_empty(p):
     '''else_block : empty'''
     p[0] = []
 
 def p_else_block(p):
-    '''else_block : IF NOT PLEASE DO THIS statement_list'''
-    p[0] = p[5]
+    '''else_block : IF_NOT PLEASE_DO_THIS statement_list'''
+    p[0] = p[3]
 
 def p_expression_relational(p):
     '''expression_relational : expression EQ expression
@@ -202,6 +199,10 @@ def p_factor_word(p):
     '''factor : WORD_LITERAL'''
     p[0] = ('literal', p[1])
 
+def p_factor_ask(p):
+    '''factor : statement_ask'''
+    p[0] = p[1]
+
 def p_factor_expr(p):
     '''factor : LPAREN expression RPAREN'''
     p[0] = p[2]
@@ -218,7 +219,7 @@ def p_error(p):
         parser_errors.append("Error de sintaxis: Fin de archivo inesperado. ¿Olvidaste cerrar el bloque de forma educada?")
 
 # ----------------------------------------------------------------------
-# 2. MOTOR DE EJECUCIÓN DIRECTA DEL AST (INTÉRPRETE RECURSIVO)
+# 2. MOTOR DE EJECUCIÓN (INTÉRPRETE)
 # ----------------------------------------------------------------------
 
 class PoliteInterpreter:
@@ -252,8 +253,7 @@ class PoliteInterpreter:
     def evaluate_expression(self, expr):
         if expr[0] == 'literal':
             val = expr[1]
-            if isinstance(val, str) and val.startswith('"'):
-                return val[1:-1]
+            if isinstance(val, str) and val.startswith('"'): return val[1:-1]
             return val
         elif expr[0] == 'variable':
             return self.variables.get(expr[1], 0)
@@ -296,8 +296,10 @@ class PoliteInterpreter:
                     else: self.variables[var_name] = ""
                     
             elif stmt_type == 'say':
-                val = self.evaluate_expression(stmt[1])
-                self.output_buffer.append(str(val))
+                # PROCESAMIENTO MULTI-PARÁMETRO: Evalúa y concatena la lista de expresiones
+                expr_list = stmt[1]
+                val_strs = [str(self.evaluate_expression(e)) for e in expr_list]
+                self.output_buffer.append("".join(val_strs))
                     
             elif stmt_type == 'read':
                 var_name = stmt[1]
