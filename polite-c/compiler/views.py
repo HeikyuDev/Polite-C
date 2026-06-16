@@ -3,8 +3,8 @@
 import json
 from django.shortcuts import render
 from django.http import JsonResponse
-from utils.interpreter import PoliteInterpreter
-
+# Corregido: Agregamos el punto (.) porque utils está adentro de compiler
+from .utils.interpreter import PoliteInterpreter 
 
 def ide_home(request):
     """
@@ -21,21 +21,14 @@ def run_code(request):
         source_code = request.POST.get('code', '')
         raw_inputs = request.POST.get('inputs', '{}')
         
-        # Convertimos la cadena JSON que envió el Frontend a un diccionario de Python
         try:
             user_inputs = json.loads(raw_inputs)
         except json.JSONDecodeError:
             user_inputs = {}
         
-        # Instanciamos el intérprete
         interpreter = PoliteInterpreter()
-        
-        # Ejecutamos el código pasándole la memoria actual de inputs
         execution_result = interpreter.execute(source_code, user_inputs)
         
-        # Retornamos el resultado del intérprete directamente al Frontend.
-        # execution_result ya es un diccionario con la estructura:
-        # { 'status': '...', 'output': '...', 'variable': '...' (opcional) }
         return JsonResponse(execution_result)
         
     return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=400)

@@ -17,12 +17,12 @@ def p_class_list(p):
     '''class_list : class_definition class_list'''
     p[0] = [p[1]] + p[2]
 
-# Definición de clases según la Parte 1
+# ÍNDICES CORREGIDOS: 
+# 1:CLASS, 2:ID, 3:PLEASE, 4:DO, 5:THIS, 6:statement_list, 7:FINISH
 def p_class_definition(p):
     '''class_definition : CLASS ID PLEASE DO THIS statement_list FINISH'''
-    p[0] = ('class_def', p[2], p[5])
+    p[0] = ('class_def', p[2], p[6])
 
-# Bloque de ejecución principal unificado
 def p_main_block(p):
     '''main_block : HELLO MAIN EXCLAMATION PLEASE DO THIS statement_list THANKS EXCLAMATION
                   | HELLO MAIN EXCLAMATION PLEASE DO THIS statement_list THANKS'''
@@ -36,7 +36,6 @@ def p_statement_list(p):
     '''statement_list : statement statement_list'''
     p[0] = [p[1]] + p[2]
 
-# Lista generalizada de sentencias del lenguaje
 def p_statement(p):
     '''statement : statement_define
                  | statement_say
@@ -48,7 +47,6 @@ def p_statement(p):
                  | method_definition'''
     p[0] = p[1]
 
-# Declaración limpia sin dos puntos obligatorios: "please define edad as number"
 def p_statement_define(p):
     '''statement_define : PLEASE DEFINE ID AS type'''
     p[0] = ('define_var', p[3], p[5])
@@ -60,17 +58,14 @@ def p_type(p):
             | ID'''
     p[0] = p[1]
 
-# Sentencia de salida limpia: "please say edad"
 def p_statement_say(p):
     '''statement_say : PLEASE SAY expression'''
     p[0] = ('say', p[3])
 
-# Sentencia de entrada limpia: "please read edad"
 def p_statement_read(p):
     '''statement_read : PLEASE READ ID'''
     p[0] = ('read', p[3])
 
-# Asignaciones (soporta estilo conversacional y matemático directo)
 def p_statement_assign_conversational(p):
     '''statement_assign : PLEASE MAKE ID EQUALS TO expression'''
     p[0] = ('assign', p[3], p[6])
@@ -79,7 +74,6 @@ def p_statement_assign_direct(p):
     '''statement_assign : ID ASSIGN expression'''
     p[0] = ('assign', p[1], p[3])
 
-# Soporte estructural formal para POO (Clases y Objetos)
 def p_statement_create(p):
     '''statement_create : PLEASE CREATE ID AS ID'''
     p[0] = ('create_obj', p[3], p[5])
@@ -88,13 +82,15 @@ def p_statement_ask(p):
     '''statement_ask : PLEASE ASK ID TO ID argument_list'''
     p[0] = ('ask_method', p[3], p[5], p[6])
 
+# ÍNDICES CORREGIDOS: statement_list está en la posición 9
 def p_method_definition_no_return(p):
     '''method_definition : ID RECEIVES LPAREN param_list RPAREN PLEASE DO THIS statement_list FINISH'''
-    p[0] = ('method_def_no_return', p[1], p[4], p[8])
+    p[0] = ('method_def_no_return', p[1], p[4], p[9])
 
+# ÍNDICES CORREGIDOS: type(8), statement_list(12), expression(16)
 def p_method_definition_with_return(p):
     '''method_definition : ID RECEIVES LPAREN param_list RPAREN TO GIVE type PLEASE DO THIS statement_list PLEASE GIVE BACK expression FINISH'''
-    p[0] = ('method_def_with_return', p[1], p[4], p[7], p[10], p[13])
+    p[0] = ('method_def_with_return', p[1], p[4], p[8], p[12], p[16])
 
 def p_param_list_empty(p):
     '''param_list : empty'''
@@ -140,10 +136,10 @@ def p_resto_expr(p):
     '''resto_expr : COMMA expression resto_expr'''
     p[0] = [p[2]] + p[3]
 
-# Condicional cerrado por la palabra clave FINISH, sin hackeos de indentación
+# ÍNDICES CORREGIDOS: rel_op(5), statement_list(10), else_block(11)
 def p_statement_if(p):
     '''statement_if : IF THIS HAPPENS LPAREN expression_relational RPAREN PLEASE DO THIS statement_list else_block FINISH'''
-    p[0] = ('if_block', p[4], p[8], p[9])
+    p[0] = ('if_block', p[5], p[10], p[11])
 
 def p_else_block_empty(p):
     '''else_block : empty'''
@@ -153,7 +149,6 @@ def p_else_block(p):
     '''else_block : IF NOT PLEASE DO THIS statement_list'''
     p[0] = p[5]
 
-# Árbol de expresiones lógicas y relacionales complejas (edad == 18)
 def p_expression_relational(p):
     '''expression_relational : expression EQ expression
                              | expression NE expression
@@ -163,7 +158,6 @@ def p_expression_relational(p):
                              | expression GE expression'''
     p[0] = ('rel_op', p[2], p[1], p[3])
 
-# Árbol de precedencia matemática (Suma, Resta, Multiplicación, División)
 def p_expression_plus(p):
     '''expression : expression PLUS term'''
     p[0] = ('arith_op', '+', p[1], p[3])
@@ -249,7 +243,6 @@ class PoliteInterpreter:
         if not ast:
             return {'status': 'completed', 'output': "Error: Estructura de código irreconocible."}
 
-        # Desarmamos la raíz del Árbol de Sintaxis Abstracta
         _, class_list, main_block = ast
         _, statements = main_block
         
