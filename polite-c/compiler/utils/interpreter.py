@@ -55,7 +55,6 @@ def p_type(p):
             | ID'''
     p[0] = p[1]
 
-# REGLA ADAPTADA A LA SECCIÓN 5.4.10: Soporta expresiones infinitas separadas por comas
 def p_statement_say(p):
     '''statement_say : PLEASE_SAY expression_list'''
     p[0] = ('say', p[2])
@@ -219,7 +218,12 @@ def p_error(p):
         parser_errors.append("Error de sintaxis: Fin de archivo inesperado. ¿Olvidaste cerrar el bloque de forma educada?")
 
 # ----------------------------------------------------------------------
-# 2. MOTOR DE EJECUCIÓN DIRECTA (INTÉRPRETE RECURSIVO CONCATENADOR)
+# PUNTO CRÍTICO: El parser Singleton global correcto
+# ----------------------------------------------------------------------
+polite_parser = yacc.yacc(debug=False, write_tables=False)
+
+# ----------------------------------------------------------------------
+# 2. MOTOR DE EJECUCIÓN DEL INTERPRETE
 # ----------------------------------------------------------------------
 
 class PoliteInterpreter:
@@ -233,8 +237,7 @@ class PoliteInterpreter:
         parser_errors = []
         
         lexer = get_lexer()
-        parser = yacc.yacc(debug=False, write_tables=False)
-        ast = parser.parse(source_code, lexer=lexer)
+        ast = polite_parser.parse(source_code, lexer=lexer)
         
         from .lexer import lexer_errors
         all_errors = lexer_errors + parser_errors
@@ -297,7 +300,6 @@ class PoliteInterpreter:
                     else: self.variables[var_name] = ""
                     
             elif stmt_type == 'say':
-                # EVALUACIÓN MULTI-PARÁMETRO: Evalúa cada expresión de la lista y las concatena
                 expr_list = stmt[1]
                 val_strs = [str(self.evaluate_expression(e)) for e in expr_list]
                 self.output_buffer.append("".join(val_strs))
@@ -305,7 +307,20 @@ class PoliteInterpreter:
             elif stmt_type == 'read':
                 var_name = stmt[1]
                 if var_name in user_inputs:
-                    self.variables[var_name] = user_inputs[var_name]
+                    val = user_inputs[var_name]
+                    
+                    # CORREGIDO: Casteador inteligente nativo para entradas asíncronas de la web
+                    if isinstance(val, str):
+                        val_clean = val.strip()
+                        if val_clean.isdigit():
+                            val = int(val_clean)
+                        else:
+                            try:
+                                val = float(val_clean)
+                            except ValueError:
+                                pass # Queda como texto si no se puede convertir
+                                
+                    self.variables[var_name] = val
                 else:
                     return {
                         'status': 'awaiting_input',

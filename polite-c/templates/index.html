@@ -119,30 +119,13 @@
         }
         
         button:hover { background-color: #219150; }
-        
         button:active { transform: scale(0.98); }
-        
-        button.secondary {
-            background-color: #3498db;
-        }
-        
+        button.secondary { background-color: #3498db; }
         button.secondary:hover { background-color: #2980b9; }
-        
-        button.danger {
-            background-color: #e74c3c;
-        }
-        
+        button.danger { background-color: #e74c3c; }
         button.danger:hover { background-color: #c0392b; }
         
-        #fileInput {
-            display: none;
-        }
-        
-        .status-info {
-            font-size: 12px;
-            color: #666;
-        }
-        
+        #fileInput { display: none; }
         h3 { color: #2c3e50; margin-top: 20px; }
         
         #console {
@@ -160,158 +143,44 @@
             resize: vertical;
             overflow-y: auto;
         }
-        
-        .error-line {
-            background-color: #ffcccc;
-        }
-        
-        /* Media Queries para Responsive Design */
-        @media (max-width: 768px) {
-            body {
-                margin: 5px;
-            }
-            
-            .ide-container {
-                max-width: 100%;
-                gap: 10px;
-            }
-            
-            h1 {
-                font-size: 20px;
-                margin-bottom: 8px;
-            }
-            
-            h3 {
-                font-size: 16px;
-            }
-            
-            #lineNumbers {
-                font-size: 12px;
-                padding: 8px 5px;
-                min-width: 35px;
-            }
-            
-            #editor {
-                height: 250px;
-                font-size: 12px;
-                padding: 8px;
-            }
-            
-            #highlighter {
-                font-size: 12px;
-                padding: 8px;
-            }
-            
-            #console {
-                height: 150px;
-                font-size: 11px;
-                padding: 8px;
-            }
-            
-            .controls {
-                gap: 5px;
-                justify-content: center;
-            }
-            
-            button {
-                padding: 8px 12px;
-                font-size: 12px;
-                flex: 1;
-                min-width: 80px;
-            }
-            
-            .editor-wrapper {
-                gap: 0;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            body {
-                margin: 3px;
-            }
-            
-            .ide-container {
-                gap: 8px;
-            }
-            
-            h1 {
-                font-size: 18px;
-                margin-bottom: 6px;
-            }
-            
-            h3 {
-                font-size: 14px;
-                margin-top: 10px;
-            }
-            
-            #lineNumbers {
-                font-size: 10px;
-                padding: 6px 4px;
-                min-width: 30px;
-            }
-            
-            #editor {
-                height: 200px;
-                font-size: 11px;
-                padding: 6px;
-                line-height: 1.4;
-            }
-            
-            #highlighter {
-                font-size: 11px;
-                padding: 6px;
-            }
-            
-            #console {
-                height: 120px;
-                font-size: 10px;
-                padding: 6px;
-            }
-            
-            .controls {
-                flex-direction: column;
-                gap: 6px;
-                justify-content: stretch;
-            }
-            
-            button {
-                width: 100%;
-                padding: 10px 8px;
-                font-size: 11px;
-            }
-            
-            .status-info {
-                font-size: 10px;
-            }
-        }
     </style>
 </head>
 <body>
 
 <div class="ide-container">
-<a href="/">
-  <img src="../static/logo.png" alt="Polite-C" style="display: block; margin: 0 auto; width: auto; height: auto;">
-</a>
+    <a href="/">
+        <img src="../static/logo.png" alt="Polite-C" style="display: block; margin: 0 auto; width: auto; height: auto;">
+    </a>
     <div class="editor-wrapper">
         <div id="lineNumbers"></div>
         <div id="editorContainer">
             <div id="highlighter"></div>
-            <textarea id="editor" placeholder="Escribe tu código cortés aquí...">!comment: "Mi primer programa en Polite C"
+            <textarea id="editor" autocomplete="off" placeholder="Escribe tu código cortés aquí...">!comment "Mi primer programa estructurado en Polite C"
 
-hello main! please do this:
-    please say: "Hola Mundo desde el mini IDE"
+hello main! please do this
+    please define edad as number
+    please define limite as number
+
+    please make limite equals to 18
+    
+    please say "Por favor ingrese su edad en el cuadro emergente"
+    please read edad
+
+    if this happens (edad >= limite) please do this
+        please say "Bienvenido. Acceso concedido de forma educada."
+    if not please do this
+        please say "Lo sentimos, eres menor de edad. Acceso denegado."
+    finish
 thanks!</textarea>
         </div>
     </div>
     
-<div class="controls" style="display: flex; width: 100%; gap: 10px;">
-    <button class="secondary" onclick="importCode()" title="Importar código desde un archivo .txt">Importar</button>
-    <!-- Agregamos el margen automático a este segundo botón -->
-    <button class="secondary" onclick="exportCode()" title="Exportar código como archivo .txt" style="margin-right: auto;">Exportar</button>
-    
-    <button onclick="executeCode()" title="Ejecutar el código (Ctrl+Enter)">▶ Ejecutar</button>
-    <button class="danger" onclick="clearConsole()" title="Limpiar la consola">🗑 Limpiar</button>
-</div>
+    <div class="controls" style="display: flex; width: 100%; gap: 10px;">
+        <button class="secondary" onclick="importCode()" title="Importar código desde un archivo .txt">Importar</button>
+        <button class="secondary" onclick="exportCode()" title="Exportar código como archivo .txt" style="margin-right: auto;">Exportar</button>
+        <button onclick="executeCode()" title="Ejecutar el código (Ctrl+Enter)">▶ Ejecutar</button>
+        <button class="danger" onclick="clearConsole()" title="Limpiar la consola">🗑 Limpiar</button>
+    </div>
     
     <input type="file" id="fileInput" accept=".txt" onchange="handleFileImport(event)">
     
@@ -327,10 +196,6 @@ thanks!</textarea>
     
     let currentInputs = {};
     
-    // Keywords de Polite C para syntax highlighting
-    const keywords = ['hello', 'main', 'please', 'do', 'this', 'say', 'thanks', 'comment', 'if', 'else', 'while', 'for'];
-    
-    // Actualizar números de línea
     function updateLineNumbers() {
         const lines = editor.value.split('\n').length;
         let lineNumbersHTML = '';
@@ -340,29 +205,29 @@ thanks!</textarea>
         lineNumbers.textContent = lineNumbersHTML;
     }
     
-    // Syntax highlighting
     function updateHighlighting() {
         let code = editor.value;
-        
-        // Escapar HTML
         code = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         
-        // Resaltar comentarios primero (para evitar conflictos)
-        code = code.replace(/!comment:.*$/gm, '<span class="comment">$&</span>');
-        
-        // Resaltar strings
+        // CORREGIDO: Resaltador léxico estricto para comentarios y cadenas
+        code = code.replace(/!comment.*$/gm, '<span class="comment">$&</span>');
         code = code.replace(/"([^"]*)"/g, '<span class="string">"$1"</span>');
         
-        // Resaltar frases clave completas (en negrita y color)
+        // CORREGIDO: Mapeo de frases de cortesía unificadas de la Parte 1
         const phrases = [
             'hello main!',
-            'please do this:',
+            'please do this',
             'please define',
-            'please say:',
             'please say',
+            'please read',
             'thanks!',
-            'if please',
-            'else please'
+            'if this happens',
+            'if not',
+            'please make',
+            'equals to',
+            'please create',
+            'please ask',
+            'please give back'
         ];
         
         phrases.forEach(phrase => {
@@ -370,67 +235,43 @@ thanks!</textarea>
             code = code.replace(regex, match => `<span class="keyword-phrase">${match}</span>`);
         });
         
-        // Resaltar palabras clave individuales
-        const keywords = ['hello', 'main', 'please', 'do', 'this', 'say', 'thanks', 'comment', 'if', 'else', 'while', 'for', 'define'];
+        const keywords = ['as', 'number', 'floatnumber', 'word', 'Class', 'class', 'finish', 'receives', 'with', 'to'];
         keywords.forEach(keyword => {
             const regex = new RegExp(`\\b${keyword}\\b`, 'g');
-            code = code.replace(regex, match => {
-                // No reemplazar si ya está dentro de un span (para evitar duplicados)
-                return `<span class="keyword">${match}</span>`;
-            });
+            code = code.replace(regex, match => `<span class="keyword">${match}</span>`);
         });
         
         highlighter.innerHTML = code;
     }
     
-    // Sincronizar scroll entre editor y highlighter
     editor.addEventListener('scroll', function() {
         highlighter.scrollTop = editor.scrollTop;
         highlighter.scrollLeft = editor.scrollLeft;
     });
     
-    // Manejar Tab para indentación automática
     editor.addEventListener('keydown', function(e) {
         if (e.key === 'Tab') {
             e.preventDefault();
             const start = editor.selectionStart;
             const end = editor.selectionEnd;
-            
             if (start === end) {
-                // Insertar 4 espacios
                 editor.value = editor.value.substring(0, start) + '    ' + editor.value.substring(end);
                 editor.selectionStart = editor.selectionEnd = start + 4;
-            } else {
-                // Indentar múltiples líneas
-                const lines = editor.value.substring(0, end).split('\n');
-                const startLine = editor.value.substring(0, start).split('\n').length - 1;
-                const endLine = lines.length - 1;
-                
-                let newValue = editor.value.split('\n');
-                for (let i = startLine; i <= endLine; i++) {
-                    if (newValue[i]) newValue[i] = '    ' + newValue[i];
-                }
-                
-                editor.value = newValue.join('\n');
             }
         }
         
-        // Ctrl+Enter para ejecutar
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
             executeCode();
         }
         
-        // Indentación automática al presionar Enter
+        // CORREGIDO: Auto-indentado al detectar la cláusula formal "please do this"
         if (e.key === 'Enter') {
             const start = editor.selectionStart;
             const textBeforeCursor = editor.value.substring(0, start);
             const lastLine = textBeforeCursor.split('\n').pop();
-            const indentMatch = lastLine.match(/^(\s*)/);
-            const currentIndent = indentMatch ? indentMatch[1] : '';
             
-            // Si la línea anterior termina con ":", agregar más indentación
-            if (lastLine.trim().endsWith(':')) {
+            if (lastLine.trim().endsWith('please do this')) {
                 setTimeout(() => {
                     const cursorPos = editor.selectionStart;
                     editor.value = editor.value.substring(0, cursorPos) + '    ' + editor.value.substring(cursorPos);
@@ -442,13 +283,11 @@ thanks!</textarea>
         }
     });
     
-    // Actualizar mientras se escribe
     editor.addEventListener('input', function() {
         updateLineNumbers();
         updateHighlighting();
     });
     
-    // Ejecutar código
     function executeCode(resumeVariable = null, resumeValue = null) {
         const codeContent = editor.value;
         
@@ -473,57 +312,35 @@ thanks!</textarea>
             consoleOutput.value = data.output;
             
             if (data.status === 'awaiting_input') {
-                const userInput = prompt(`[Polite C Input Required]\nPor favor, introduce un valor para: ${data.variable}`);
+                const userInput = prompt(`[Polite C Input Required]\nPor favor, introduce un valor para la variable: ${data.variable}`);
                 if (userInput !== null) {
                     executeCode(data.variable, userInput);
                 }
             } else if (data.status === 'completed') {
                 consoleOutput.value += "\n\n✅ --- Ejecución terminada con éxito. ¡Gracias! ---";
-            } else if (data.status === 'error') {
-                consoleOutput.value += "\n\n❌ --- Error en la ejecución ---";
             }
         })
         .catch(error => {
-            consoleOutput.value = "❌ Error de comunicación: " + error;
+            consoleOutput.value = "❌ Error de comunicación con Django: " + error;
         });
     }
     
-    // Limpiar consola
-    function clearConsole() {
-        consoleOutput.value = '';
-    }
+    function clearConsole() { consoleOutput.value = ''; }
+    function importCode() { document.getElementById('fileInput').click(); }
     
-    // Importar código desde archivo .txt
-    function importCode() {
-        document.getElementById('fileInput').click();
-    }
-    
-    // Manejar la importación de archivo
     function handleFileImport(event) {
         const file = event.target.files[0];
         if (!file) return;
-        
         const reader = new FileReader();
         reader.onload = function(e) {
-            try {
-                editor.value = e.target.result;
-                updateLineNumbers();
-                updateHighlighting();
-                consoleOutput.value = `✅ Archivo "${file.name}" importado exitosamente.`;
-            } catch (error) {
-                consoleOutput.value = `❌ Error al importar el archivo: ${error.message}`;
-            }
-        };
-        reader.onerror = function() {
-            consoleOutput.value = '❌ Error al leer el archivo.';
+            editor.value = e.target.result;
+            updateLineNumbers();
+            updateHighlighting();
         };
         reader.readAsText(file);
-        
-        // Limpiar el input para permitir reimportar el mismo archivo
         event.target.value = '';
     }
     
-    // Exportar código como archivo .txt
     function exportCode() {
         const codeContent = editor.value;
         const blob = new Blob([codeContent], { type: 'text/plain' });
@@ -535,13 +352,10 @@ thanks!</textarea>
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        consoleOutput.value = '✅ Código exportado como "codigo_polite_c.txt".';
     }
     
-    // Inicialización
     updateLineNumbers();
     updateHighlighting();
 </script>
-
 </body>
 </html>
