@@ -17,6 +17,7 @@ def run_code(request):
     Soporta la pausa de ejecución cuando se requiere la entrada del usuario.
     """
     if request.method == 'POST':
+<<<<<<< Updated upstream
         source_code = request.POST.get('code', '')
         raw_inputs = request.POST.get('inputs', '{}')
         
@@ -36,5 +37,27 @@ def run_code(request):
         # execution_result ya es un diccionario con la estructura:
         # { 'status': '...', 'output': '...', 'variable': '...' (opcional) }
         return JsonResponse(execution_result)
+=======
+        try:
+            source_code = request.POST.get('code', '')
+            raw_inputs = request.POST.get('inputs', '{}')
+            
+            try:
+                user_inputs = json.loads(raw_inputs)
+            except json.JSONDecodeError:
+                user_inputs = {}
+            
+            interpreter = PoliteInterpreter()
+            execution_result = interpreter.execute(source_code, user_inputs)
+            
+            return JsonResponse(execution_result)
+        except Exception as e:
+            import traceback
+            error_msg = f"Error en ejecución: {str(e)}\n{traceback.format_exc()}"
+            return JsonResponse({
+                'status': 'completed',
+                'output': error_msg
+            })
+>>>>>>> Stashed changes
         
     return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=400)

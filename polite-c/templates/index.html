@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>PC - Mini IDE</title>
-    <link rel="shortcut icon" href="../static/icon.png" type="image/png">    
+    <link rel="shortcut icon" href="../static/icon.png" type="image/png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -49,12 +50,16 @@
             min-width: 40px;
             white-space: pre;
             overflow: hidden;
+            max-height: 350px;
+            overflow-y: hidden;
         }
         
         #editorContainer {
             flex: 1;
             position: relative;
             overflow: hidden;
+            height: 350px;
+            background: #272822;
         }
         
         #editor {
@@ -67,35 +72,51 @@
             resize: none;
             outline: none;
             line-height: 1.5;
-            background-color: #fff;
-            color: #333;
-            overflow: hidden;
+            background-color: transparent;
+            color: transparent;
+            overflow-y: auto;
+            overflow-x: auto;
             position: relative;
             z-index: 2;
+            margin: 0;
+            caret-color: #fff;
         }
         
-        #highlighter {
+        .prism-editor {
+            position: relative;
+            overflow: hidden;
+            background: #272822;
+            height: 350px;
+        }
+        
+        .prism-editor pre {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            margin: 0;
             padding: 10px;
             font-family: 'Courier New', Courier, monospace;
             font-size: 14px;
             line-height: 1.5;
-            color: transparent;
+            overflow: auto;
+            background: transparent;
+            color: #f8f8f2;
+            pointer-events: none;
+            z-index: 1;
+            box-sizing: border-box;
             white-space: pre-wrap;
             word-wrap: break-word;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: 1;
         }
         
-        .keyword { color: #0066cc; font-weight: bold; }
-        .keyword-phrase { color: #0066cc; font-weight: bold; }
-        .comment { color: #888; font-style: italic; }
-        .string { color: #008000; }
+        .prism-editor code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+            font-family: inherit;
+            font-size: inherit;
+        }
         
         .controls {
             display: flex;
@@ -294,9 +315,14 @@
 </a>
     <div class="editor-wrapper">
         <div id="lineNumbers"></div>
+<<<<<<< Updated upstream
         <div id="editorContainer">
             <div id="highlighter"></div>
             <textarea id="editor" placeholder="Escribe tu código cortés aquí...">!comment: "Mi primer programa en Polite C"
+=======
+        <div id="editorContainer" class="prism-editor">
+            <textarea id="editor" autocomplete="off" spellcheck="false" placeholder="Escribe tu código cortés aquí...">!comment "Mi primer programa estructurado en Polite C"
+>>>>>>> Stashed changes
 
 hello main! please do this:
     please say: "Hola Mundo desde el mini IDE"
@@ -319,13 +345,27 @@ thanks!</textarea>
     <textarea id="console" readonly placeholder="Los resultados aparecerán aquí..."></textarea>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+
 <script>
+    // Definición del lenguaje Polite C para Prism
+    Prism.languages['polite_c'] = {
+        'comment': /!comment\s*"([^\\"]|\\.)*"/,
+        'string': /"([^\\"]|\\.)*"/,
+        'keyword': /\b(hello|main|please|do|this|define|as|number|floatnumber|word|say|read|if|happens|not|thanks|Class|class|finish|create|object|ask|with|to|make|equals|receives|give|back)\b/,
+        'number': /\b\d+(\.\d+)?\b/,
+        'operator': /==|!=|<=|>=|<|>|\+|-|\*|\/|%/,
+        'punctuation': /[(){}[\];:,]/
+    };
+
     const editor = document.getElementById('editor');
-    const highlighter = document.getElementById('highlighter');
+    const editorContainer = document.getElementById('editorContainer');
     const lineNumbers = document.getElementById('lineNumbers');
     const consoleOutput = document.getElementById('console');
     
     let currentInputs = {};
+    let isUpdating = false;
     
     // Keywords de Polite C para syntax highlighting
     const keywords = ['hello', 'main', 'please', 'do', 'this', 'say', 'thanks', 'comment', 'if', 'else', 'while', 'for'];
@@ -340,6 +380,7 @@ thanks!</textarea>
         lineNumbers.textContent = lineNumbersHTML;
     }
     
+<<<<<<< Updated upstream
     // Syntax highlighting
     function updateHighlighting() {
         let code = editor.value;
@@ -364,12 +405,30 @@ thanks!</textarea>
             'if please',
             'else please'
         ];
+=======
+    function highlightCode() {
+        isUpdating = true;
+        const code = editor.value;
         
-        phrases.forEach(phrase => {
-            const regex = new RegExp(`\\b${phrase}\\b`, 'gi');
-            code = code.replace(regex, match => `<span class="keyword-phrase">${match}</span>`);
-        });
+        // Crear un elemento pre/code para que Prism lo procese
+        let preElement = editorContainer.querySelector('pre');
+        if (!preElement) {
+            preElement = document.createElement('pre');
+            preElement.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; margin: 0; padding: 10px; overflow: auto; pointer-events: none; z-index: 1; box-sizing: border-box; white-space: pre-wrap; word-wrap: break-word; font-family: "Courier New", Courier, monospace; font-size: 14px; line-height: 1.5; background: transparent; color: #f8f8f2;';
+            const codeElement = document.createElement('code');
+            codeElement.className = 'language-polite_c';
+            preElement.appendChild(codeElement);
+            editorContainer.insertBefore(preElement, editorContainer.firstChild);
+        }
         
+        const codeElement = preElement.querySelector('code');
+        codeElement.textContent = code;
+>>>>>>> Stashed changes
+        
+        // Aplicar Prism highlight
+        Prism.highlightElement(codeElement);
+        
+<<<<<<< Updated upstream
         // Resaltar palabras clave individuales
         const keywords = ['hello', 'main', 'please', 'do', 'this', 'say', 'thanks', 'comment', 'if', 'else', 'while', 'for', 'define'];
         keywords.forEach(keyword => {
@@ -379,14 +438,23 @@ thanks!</textarea>
                 return `<span class="keyword">${match}</span>`;
             });
         });
+=======
+        // Sincronizar scroll
+        preElement.scrollTop = editor.scrollTop;
+        preElement.scrollLeft = editor.scrollLeft;
+>>>>>>> Stashed changes
         
-        highlighter.innerHTML = code;
+        isUpdating = false;
     }
     
     // Sincronizar scroll entre editor y highlighter
     editor.addEventListener('scroll', function() {
-        highlighter.scrollTop = editor.scrollTop;
-        highlighter.scrollLeft = editor.scrollLeft;
+        const preElement = editorContainer.querySelector('pre');
+        if (preElement) {
+            preElement.scrollTop = editor.scrollTop;
+            preElement.scrollLeft = editor.scrollLeft;
+        }
+        updateLineNumbers();
     });
     
     // Manejar Tab para indentación automática
@@ -421,7 +489,11 @@ thanks!</textarea>
             executeCode();
         }
         
+<<<<<<< Updated upstream
         // Indentación automática al presionar Enter
+=======
+        // Auto-indentado al detectar "please do this"
+>>>>>>> Stashed changes
         if (e.key === 'Enter') {
             const start = editor.selectionStart;
             const textBeforeCursor = editor.value.substring(0, start);
@@ -436,7 +508,7 @@ thanks!</textarea>
                     editor.value = editor.value.substring(0, cursorPos) + '    ' + editor.value.substring(cursorPos);
                     editor.selectionStart = editor.selectionEnd = cursorPos + 4;
                     updateLineNumbers();
-                    updateHighlighting();
+                    highlightCode();
                 }, 0);
             }
         }
@@ -445,7 +517,7 @@ thanks!</textarea>
     // Actualizar mientras se escribe
     editor.addEventListener('input', function() {
         updateLineNumbers();
-        updateHighlighting();
+        highlightCode();
     });
     
     // Ejecutar código
@@ -505,6 +577,7 @@ thanks!</textarea>
         
         const reader = new FileReader();
         reader.onload = function(e) {
+<<<<<<< Updated upstream
             try {
                 editor.value = e.target.result;
                 updateLineNumbers();
@@ -516,6 +589,11 @@ thanks!</textarea>
         };
         reader.onerror = function() {
             consoleOutput.value = '❌ Error al leer el archivo.';
+=======
+            editor.value = e.target.result;
+            updateLineNumbers();
+            highlightCode();
+>>>>>>> Stashed changes
         };
         reader.readAsText(file);
         
@@ -540,7 +618,7 @@ thanks!</textarea>
     
     // Inicialización
     updateLineNumbers();
-    updateHighlighting();
+    highlightCode();
 </script>
 
 </body>
