@@ -19,7 +19,7 @@ reserved = {
     'object': 'OBJECT',
 }
 
-# Catálogo general de tokens sintácticos (Machea al 100% con la sección 5.1 del Word)
+# Catálogo general de tokens sintácticos
 tokens = [
     'ID', 'WORD_LITERAL', 'NUMBER_LITERAL', 'FLOAT_LITERAL',
     'LPAREN', 'RPAREN', 'COMMA', 'ASSIGN',
