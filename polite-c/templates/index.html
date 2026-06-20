@@ -315,17 +315,11 @@
 </a>
     <div class="editor-wrapper">
         <div id="lineNumbers"></div>
-<<<<<<< Updated upstream
-        <div id="editorContainer">
-            <div id="highlighter"></div>
-            <textarea id="editor" placeholder="Escribe tu código cortés aquí...">!comment: "Mi primer programa en Polite C"
-=======
         <div id="editorContainer" class="prism-editor">
             <textarea id="editor" autocomplete="off" spellcheck="false" placeholder="Escribe tu código cortés aquí...">!comment "Mi primer programa estructurado en Polite C"
->>>>>>> Stashed changes
 
-hello main! please do this:
-    please say: "Hola Mundo desde el mini IDE"
+hello main! please do this
+    please say "Hola Mundo desde el mini IDE"
 thanks!</textarea>
         </div>
     </div>
@@ -380,32 +374,6 @@ thanks!</textarea>
         lineNumbers.textContent = lineNumbersHTML;
     }
     
-<<<<<<< Updated upstream
-    // Syntax highlighting
-    function updateHighlighting() {
-        let code = editor.value;
-        
-        // Escapar HTML
-        code = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        
-        // Resaltar comentarios primero (para evitar conflictos)
-        code = code.replace(/!comment:.*$/gm, '<span class="comment">$&</span>');
-        
-        // Resaltar strings
-        code = code.replace(/"([^"]*)"/g, '<span class="string">"$1"</span>');
-        
-        // Resaltar frases clave completas (en negrita y color)
-        const phrases = [
-            'hello main!',
-            'please do this:',
-            'please define',
-            'please say:',
-            'please say',
-            'thanks!',
-            'if please',
-            'else please'
-        ];
-=======
     function highlightCode() {
         isUpdating = true;
         const code = editor.value;
@@ -423,26 +391,13 @@ thanks!</textarea>
         
         const codeElement = preElement.querySelector('code');
         codeElement.textContent = code;
->>>>>>> Stashed changes
         
         // Aplicar Prism highlight
         Prism.highlightElement(codeElement);
         
-<<<<<<< Updated upstream
-        // Resaltar palabras clave individuales
-        const keywords = ['hello', 'main', 'please', 'do', 'this', 'say', 'thanks', 'comment', 'if', 'else', 'while', 'for', 'define'];
-        keywords.forEach(keyword => {
-            const regex = new RegExp(`\\b${keyword}\\b`, 'g');
-            code = code.replace(regex, match => {
-                // No reemplazar si ya está dentro de un span (para evitar duplicados)
-                return `<span class="keyword">${match}</span>`;
-            });
-        });
-=======
         // Sincronizar scroll
         preElement.scrollTop = editor.scrollTop;
         preElement.scrollLeft = editor.scrollLeft;
->>>>>>> Stashed changes
         
         isUpdating = false;
     }
@@ -489,11 +444,7 @@ thanks!</textarea>
             executeCode();
         }
         
-<<<<<<< Updated upstream
-        // Indentación automática al presionar Enter
-=======
         // Auto-indentado al detectar "please do this"
->>>>>>> Stashed changes
         if (e.key === 'Enter') {
             const start = editor.selectionStart;
             const textBeforeCursor = editor.value.substring(0, start);
@@ -577,23 +528,9 @@ thanks!</textarea>
         
         const reader = new FileReader();
         reader.onload = function(e) {
-<<<<<<< Updated upstream
-            try {
-                editor.value = e.target.result;
-                updateLineNumbers();
-                updateHighlighting();
-                consoleOutput.value = `✅ Archivo "${file.name}" importado exitosamente.`;
-            } catch (error) {
-                consoleOutput.value = `❌ Error al importar el archivo: ${error.message}`;
-            }
-        };
-        reader.onerror = function() {
-            consoleOutput.value = '❌ Error al leer el archivo.';
-=======
             editor.value = e.target.result;
             updateLineNumbers();
             highlightCode();
->>>>>>> Stashed changes
         };
         reader.readAsText(file);
         

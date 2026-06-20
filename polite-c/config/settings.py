@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Nuestras apps
-    'utils.apps.UtilsConfig',
     'compiler.apps.CompilerConfig',
 ]
 

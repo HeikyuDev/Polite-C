@@ -2,7 +2,7 @@ import ply.yacc as yacc
 from .lexer import tokens, get_lexer
 
 # ----------------------------------------------------------------------
-# 1. GRAMÁTICA CON SOPORTE MULTI-PARÁMETRO EN IMPRESIÓN (ELEGANTES BNF)
+# 1. GRAMÁTICA CORREGIDA (SINTAXIS LIBRE DE DOS PUNTOS)
 # ----------------------------------------------------------------------
 
 def p_program(p):
@@ -18,8 +18,21 @@ def p_class_list(p):
     p[0] = [p[1]] + p[2]
 
 def p_class_definition(p):
-    '''class_definition : CLASS ID PLEASE_DO_THIS statement_list FINISH'''
+    '''class_definition : CLASS ID PLEASE_DO_THIS class_body_list FINISH'''
     p[0] = ('class_def', p[2], p[4])
+
+def p_class_body_list_empty(p):
+    '''class_body_list : empty'''
+    p[0] = []
+
+def p_class_body_list(p):
+    '''class_body_list : class_body_item class_body_list'''
+    p[0] = [p[1]] + p[2]
+
+def p_class_body_item(p):
+    '''class_body_item : statement_define
+                       | method_definition'''
+    p[0] = p[1]
 
 def p_main_block(p):
     '''main_block : HELLO_MAIN PLEASE_DO_THIS statement_list THANKS'''
@@ -32,16 +45,16 @@ def p_statement_list_empty(p):
 def p_statement_list(p):
     '''statement_list : statement statement_list'''
     p[0] = [p[1]] + p[2]
-    
+
 def p_statement(p):
     '''statement : statement_define
                  | statement_say
                  | statement_read
                  | statement_assign
                  | statement_create
-                 | statement_ask
+                 | method_call
                  | statement_if
-                 | method_definition'''
+                 | statement_else'''
     p[0] = p[1]
 
 def p_statement_define(p):
@@ -74,22 +87,22 @@ def p_statement_assign_direct(p):
     p[0] = ('assign', p[1], p[3])
 
 def p_statement_create(p):
-    # Modificación a la regla para que acepte explícitamente el token OBJECT
     '''statement_create : PLEASE_CREATE OBJECT ID'''
-    # Para permitir creación de objetos dentro del bloque main
     p[0] = ('create_obj_single', p[3])
 
-def p_statement_ask(p):
-    '''statement_ask : PLEASE_ASK ID TO ID argument_list'''
+def p_method_call(p):
+    '''method_call : PLEASE_ASK ID TO ID argument_list'''
     p[0] = ('ask_method', p[2], p[4], p[5])
 
 def p_method_definition_no_return(p):
     '''method_definition : ID RECEIVES LPAREN param_list RPAREN PLEASE_DO_THIS statement_list FINISH'''
-    p[0] = ('method_def_no_return', p[1], p[4], p[7])
+    # Estructura: (tipo, nombre, parametros, sentencias, expresion_retorno)
+    p[0] = ('method_def', p[1], p[4], p[7], None)
 
 def p_method_definition_with_return(p):
     '''method_definition : ID RECEIVES LPAREN param_list RPAREN TO_GIVE type PLEASE_DO_THIS statement_list PLEASE_GIVE_BACK expression FINISH'''
-    p[0] = ('method_def_with_return', p[1], p[4], p[7], p[9], p[11])
+    # Estructura uniforme: guardamos las sentencias en la misma posicion
+    p[0] = ('method_def', p[1], p[4], p[9], p[11])
 
 def p_param_list_empty(p):
     '''param_list : empty'''
@@ -136,16 +149,12 @@ def p_resto_expr(p):
     p[0] = [p[2]] + p[3]
 
 def p_statement_if(p):
-    '''statement_if : IF_HAPPENS LPAREN expression_relational RPAREN PLEASE_DO_THIS statement_list else_block FINISH'''
-    p[0] = ('if_block', p[3], p[6], p[7])
+    '''statement_if : IF_HAPPENS LPAREN expression_relational RPAREN PLEASE_DO_THIS statement_list FINISH'''
+    p[0] = ('if_block', p[3], p[6])
 
-def p_else_block_empty(p):
-    '''else_block : empty'''
-    p[0] = []
-
-def p_else_block(p):
-    '''else_block : IF_NOT PLEASE_DO_THIS statement_list'''
-    p[0] = p[3]
+def p_statement_else(p):
+    '''statement_else : IF_NOT PLEASE_DO_THIS statement_list FINISH'''
+    p[0] = ('else_block', p[3])
 
 def p_expression_relational(p):
     '''expression_relational : expression EQ expression
@@ -200,8 +209,8 @@ def p_factor_word(p):
     '''factor : WORD_LITERAL'''
     p[0] = ('literal', p[1])
 
-def p_factor_ask(p):
-    '''factor : statement_ask'''
+def p_factor_method_call(p):
+    '''factor : method_call'''
     p[0] = p[1]
 
 def p_factor_expr(p):
@@ -222,11 +231,10 @@ def p_error(p):
 polite_parser = yacc.yacc(debug=False, write_tables=False)
 
 # ----------------------------------------------------------------------
-# 2. MOTOR DE EJECUCIÓN DEL INTERPRETE (ACTUALIZADO PARA COMPATIBILIDAD POO)
+# 2. MOTOR DEL INTERPRETE CON CONTEXTO POO REAL
 # ----------------------------------------------------------------------
 
 class PoliteInstance:
-    """Clase auxiliar para emular la memoria interna (atributos) de cada objeto."""
     def __init__(self, class_name):
         self.class_name = class_name
         self.fields = {}
@@ -235,7 +243,8 @@ class PoliteInterpreter:
     def __init__(self):
         self.output_buffer = []
         self.global_variables = {}
-        self.classes_blueprints = {}  # Guarda los moldes de las clases: { nombre_clase: [sentencias/metodos] }
+        self.classes_blueprints = {}
+        self.last_if_condition = False
 
     def execute(self, source_code, user_inputs=None):
         if user_inputs is None: user_inputs = {}
@@ -253,15 +262,13 @@ class PoliteInterpreter:
         if not ast:
             return {'status': 'completed', 'output': "Error: Estructura de código irreconocible."}
 
-        # PROCESAMIENTO COMPATIBLE DE LA RAÍZ DEL ÁRBOL
         _, class_list, main_block = ast
         
-        # 1. Almacenar los "planos" estructurales de las clases
+        # Mapear los planos de las clases
         for clazz in class_list:
-            _, class_name, class_statements = clazz
-            self.classes_blueprints[class_name] = class_statements
+            _, class_name, body = clazz
+            self.classes_blueprints[class_name] = body
             
-        # 2. Ejecutar el bloque principal con memoria global limpia
         _, statements = main_block
         result = self.run_statements(statements, user_inputs, current_context=self.global_variables)
         return result
@@ -271,14 +278,11 @@ class PoliteInterpreter:
             val = expr[1]
             if isinstance(val, str) and val.startswith('"'):
                 return val[1:-1]
-            return int(val) if str(val).isdigit() else float(val)
-            
+            return val
         elif expr[0] == 'variable':
             var_name = expr[1]
-            # Búsqueda con prioridad: contextual (local/objeto) -> global
             if var_name in current_context: return current_context[var_name]
             return self.global_variables.get(var_name, 0)
-            
         elif expr[0] == 'arith_op':
             op = expr[1]
             left = self.evaluate_expression(expr[2], current_context)
@@ -287,13 +291,11 @@ class PoliteInterpreter:
                 if op == '+': return left + right
                 elif op == '-': return left - right
                 elif op == '*': return left * right
-                elif op == '/': return left / right if right != 0 else "Error: División por cero"
+                elif op == '/': return left / right
                 elif op == '%': return left % right
             except:
                 return 0
-                
         elif expr[0] == 'ask_method':
-            # Soporte para asignación directa desde métodos con retorno: miVar = please ask obj to met
             res = self.execute_method_call(expr, {}, current_context)
             if isinstance(res, dict) and 'return_value' in res:
                 return res['return_value']
@@ -315,16 +317,17 @@ class PoliteInterpreter:
 
     def execute_method_call(self, stmt, user_inputs, current_context):
         _, obj_name, method_name, args = stmt
-        
         obj = current_context.get(obj_name, self.global_variables.get(obj_name))
+        
         if not isinstance(obj, PoliteInstance):
             self.output_buffer.append(f"Error: '{obj_name}' no es un objeto instanciado.")
             return None
             
-        class_statements = self.classes_blueprints.get(obj.class_name, [])
+        class_body = self.classes_blueprints.get(obj.class_name, [])
         target_method = None
-        for s in class_statements:
-            if s[0] in ('method_def_no_return', 'method_def_with_return') and s[1] == method_name:
+        for s in class_body:
+            # Buscamos el nodo unificado 'method_def' por su nombre
+            if s[0] == 'method_def' and s[1] == method_name:
                 target_method = s
                 break
                 
@@ -332,25 +335,25 @@ class PoliteInterpreter:
             self.output_buffer.append(f"Error: El método '{method_name}' no existe en la clase '{obj.class_name}'.")
             return None
             
-        # El contexto del método se ejecuta SOBRE la memoria del objeto (para que pueda leer sus atributos como 'numero')
-        local_memory = obj.fields 
+        # Desestructuración limpia y segura gracias al diseño uniforme
+        _, _, params, method_statements, return_expr = target_method
         
-        # Procesar e inyectar parámetros pasados con 'with'
-        params = target_method[2]  # Estructura: [('param', 'valor', 'number')]
+        # El contexto local opera sobre los atributos del objeto para que pueda mutar su estado
+        local_memory = obj.fields
         evaluated_args = [self.evaluate_expression(a, current_context) for a in args]
         
         for idx, param_node in enumerate(params):
             if idx < len(evaluated_args):
-                local_memory[param_node[1]] = evaluated_args[idx] # Asigna el argumento al parámetro local
+                local_memory[param_node[1]] = evaluated_args[idx]
                 
-        method_statements = target_method[3] if target_method[0] == 'method_def_no_return' else target_method[4]
+        # Ejecutamos las sentencias internas
         res = self.run_statements(method_statements, user_inputs, current_context=local_memory)
         
         if res and isinstance(res, dict) and res.get('status') == 'awaiting_input':
             return res
             
-        if target_method[0] == 'method_def_with_return':
-            return_expr = target_method[5]
+        # Si el método fue definido con retorno, resolvemos la expresión sobre su memoria local
+        if return_expr is not None:
             return {'return_value': self.evaluate_expression(return_expr, local_memory)}
             
         return None
@@ -365,40 +368,30 @@ class PoliteInterpreter:
                     if var_type == 'number': current_context[var_name] = 0
                     elif var_type == 'floatnumber': current_context[var_name] = 0.0
                     elif var_type == 'word': current_context[var_name] = ""
-                    else: current_context[var_name] = ('blueprint_ref', var_type) # Declaración tipo Objeto
-                    
-            elif stmt_type == 'create_obj_single':
-                var_name = stmt[1]
-                
-                # Buscamos en la memoria qué tipo de clase se le asignó a esta variable en su definición
-                class_name = current_context.get(var_name)
-                
-                # Si es una tupla de referencia previa ('blueprint_ref', tipo_clase) o texto directo
-                if isinstance(class_name, tuple) and class_name[0] == 'blueprint_ref':
-                    class_name = class_name[1]
-                
-                if class_name in self.classes_blueprints:
-                    # Instanciación real con memoria encapsulada
-                    new_instance = PoliteInstance(class_name)
-                    
-                    # Precargar las propiedades definidas dentro de la clase como atributos limpios
-                    for class_stmt in self.classes_blueprints[class_name]:
-                        if class_stmt[0] == 'define_var':
-                            _, p_name, p_type = class_stmt
-                            new_instance.fields[p_name] = 0 if p_type == 'number' else ""
-                            
-                    current_context[var_name] = new_instance
-                else:
-                    self.output_buffer.append(f"Error: No se puede instanciar '{var_name}' porque su tipo no corresponde a una clase definida.")
-                    
-            elif stmt_type == 'ask_method':
-                self.execute_method_call(stmt, user_inputs, current_context)
+                    else: current_context[var_name] = var_type
                     
             elif stmt_type == 'say':
                 expr_list = stmt[1]
                 val_strs = [str(self.evaluate_expression(e, current_context)) for e in expr_list]
                 self.output_buffer.append("".join(val_strs))
-                    
+            
+            elif stmt_type == 'create_obj_single':
+                var_name = stmt[1]
+                class_name = current_context.get(var_name)
+                if class_name in self.classes_blueprints:
+                    new_instance = PoliteInstance(class_name)
+                    for class_stmt in self.classes_blueprints[class_name]:
+                        if class_stmt[0] == 'define_var':
+                            new_instance.fields[class_stmt[1]] = 0 if class_stmt[2] == 'number' else ""
+                    current_context[var_name] = new_instance
+                else:
+                    self.output_buffer.append(f"Error: La clase '{class_name}' no existe.")
+            
+            elif stmt_type == 'ask_method':
+                method_res = self.execute_method_call(stmt, user_inputs, current_context)
+                if method_res and isinstance(method_res, dict) and method_res.get('status') == 'awaiting_input':
+                    return method_res
+            
             elif stmt_type == 'read':
                 var_name = stmt[1]
                 if var_name in user_inputs:
@@ -411,34 +404,27 @@ class PoliteInterpreter:
                             except ValueError: pass
                     current_context[var_name] = val
                 else:
-                    return {
-                        'status': 'awaiting_input',
-                        'variable': var_name,
-                        'output': "\n".join(self.output_buffer)
-                    }
+                    return {'status': 'awaiting_input', 'variable': var_name, 'output': "\n".join(self.output_buffer)}
                     
             elif stmt_type == 'assign':
                 var_name = stmt[1]
                 current_context[var_name] = self.evaluate_expression(stmt[2], current_context)
                     
             elif stmt_type == 'if_block':
-                _, cond, if_statements, else_statements = stmt
-                # Evaluamos la condición relacional (ej: numero == 0)
+                _, cond, if_statements = stmt
                 if self.evaluate_condition(cond, current_context):
+                    self.last_if_condition = True
                     res = self.run_statements(if_statements, user_inputs, current_context)
-                    if res and res.get('status') == 'awaiting_input': return res
+                    if res and res['status'] == 'awaiting_input': return res
                 else:
-                    # Si hay un bloque else, lo ejecutamos
-                    if else_statements:
-                        res = self.run_statements(else_statements, user_inputs, current_context)
-                        if res and res.get('status') == 'awaiting_input': return res
-
+                    self.last_if_condition = False
+                    
             elif stmt_type == 'else_block':
                 _, else_statements = stmt
-                # Si el IF inmediato anterior fue falso, se ejecuta este bloque
-                if hasattr(self, 'last_if_condition') and not self.last_if_condition:
+                if not self.last_if_condition:
                     res = self.run_statements(else_statements, user_inputs, current_context)
-                    if res and res.get('status') == 'awaiting_input': return res
+                    if res and res['status'] == 'awaiting_input': return res
+
         return {
             'status': 'completed',
             'output': "\n".join(self.output_buffer)

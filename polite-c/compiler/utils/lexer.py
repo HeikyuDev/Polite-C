@@ -1,6 +1,6 @@
 import ply.lex as lex
 
-# Diccionario de palabras reservadas simples, con soporte para POO
+# Diccionario de palabras reservadas simples
 reserved = {
     'as': 'AS',
     'number': 'TYPE_NUMBER',
@@ -16,15 +16,13 @@ reserved = {
     'make': 'MAKE',
     'equals': 'EQUALS',
     'please': 'PLEASE',
-    'create': 'CREATE',
     'object': 'OBJECT',
-    'ask': 'ASK'
 }
 
-# Catálogo general de tokens sintácticos
+# Catálogo general de tokens sintácticos (Machea al 100% con la sección 5.1 del Word)
 tokens = [
     'ID', 'WORD_LITERAL', 'NUMBER_LITERAL', 'FLOAT_LITERAL',
-    'LPAREN', 'RPAREN', 'COMMA', 'ASSIGN', 'COLON',
+    'LPAREN', 'RPAREN', 'COMMA', 'ASSIGN',
     'PLUS', 'MINUS', 'MULT', 'DIV', 'MOD',
     'EQ', 'NE', 'LT', 'GT', 'LE', 'GE',
     'HELLO_MAIN', 'THANKS', 'PLEASE_DO_THIS', 'PLEASE_DEFINE',
@@ -86,7 +84,6 @@ t_LPAREN      = r'\('
 t_RPAREN      = r'\)'
 t_COMMA       = r','
 t_ASSIGN      = r'='
-t_COLON       = r':'  # <-- Agregado componente físico para el separador de bloques
 t_PLUS        = r'\+'
 t_MINUS       = r'-'
 t_MULT        = r'\*'
@@ -120,13 +117,12 @@ def t_COMMENT(t):
     r'!comment:?\s*\"([^\\\"]|\\.)*\"'
     pass
 
-# Control centralizado de saltos de línea
+# ESTRICTO: Solo se ignoran espacios, tabulaciones y retornos de carro. Nada de dos puntos sueltos.
+t_ignore = ' \t\r'
+
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
-
-# Estricto: Solo se ignoran espacios en blanco horizontales y retornos de carro
-t_ignore = ' \t\r'
 
 lexer_errors = []
 def t_error(t):
