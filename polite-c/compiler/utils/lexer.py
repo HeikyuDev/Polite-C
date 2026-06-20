@@ -16,6 +16,7 @@ reserved = {
     'make': 'MAKE',
     'equals': 'EQUALS',
     'please': 'PLEASE',
+    'object': 'OBJECT',
 }
 
 # Catálogo general de tokens sintácticos (Machea al 100% con la sección 5.1 del Word)

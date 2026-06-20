@@ -1,0 +1,34 @@
+!comment "Demostración de funcionalidades POO en Polite C"
+
+Class GeneradorDeMensajes please do this
+    please define numero as number
+
+    duplicarNumero receives (valor as number) to give number please do this
+        please define resultado as number
+        resultado = valor * 2
+        please give back resultado
+    finish
+
+    procesarDato receives () please do this
+        please say "Ingrese un número por teclado" 
+        please read numero
+
+        if this happens (numero == 0) please do this
+            please say "Error, el número no puede ser cero"
+        finish
+
+        if not please do this 
+            please say "El número ingresado es válido"
+        finish
+    finish
+finish
+
+hello main! please do this
+    please say "Hola Mundo desde el mini IDE"
+    please define numReal as number
+    please define miG as GeneradorDeMensajes
+    please create object miG
+    please ask miG to procesarDato
+    numReal = please ask miG to duplicarNumero with 4
+    please say "El doble de 4 es: ", numReal
+thanks!

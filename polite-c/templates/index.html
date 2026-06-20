@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>PC - Mini IDE</title>
-    <link rel="shortcut icon" href="../static/icon.png" type="image/png">    
+    <link rel="shortcut icon" href="../static/icon.png" type="image/png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -49,12 +50,16 @@
             min-width: 40px;
             white-space: pre;
             overflow: hidden;
+            max-height: 350px;
+            overflow-y: hidden;
         }
         
         #editorContainer {
             flex: 1;
             position: relative;
             overflow: hidden;
+            height: 350px;
+            background: #272822;
         }
         
         #editor {
@@ -67,35 +72,51 @@
             resize: none;
             outline: none;
             line-height: 1.5;
-            background-color: #fff;
-            color: #333;
-            overflow: hidden;
+            background-color: transparent;
+            color: transparent;
+            overflow-y: auto;
+            overflow-x: auto;
             position: relative;
             z-index: 2;
+            margin: 0;
+            caret-color: #fff;
         }
         
-        #highlighter {
+        .prism-editor {
+            position: relative;
+            overflow: hidden;
+            background: #272822;
+            height: 350px;
+        }
+        
+        .prism-editor pre {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            margin: 0;
             padding: 10px;
             font-family: 'Courier New', Courier, monospace;
             font-size: 14px;
             line-height: 1.5;
-            color: transparent;
+            overflow: auto;
+            background: transparent;
+            color: #f8f8f2;
+            pointer-events: none;
+            z-index: 1;
+            box-sizing: border-box;
             white-space: pre-wrap;
             word-wrap: break-word;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: 1;
         }
         
-        .keyword { color: #0066cc; font-weight: bold; }
-        .keyword-phrase { color: #0066cc; font-weight: bold; }
-        .comment { color: #888; font-style: italic; }
-        .string { color: #008000; }
+        .prism-editor code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+            font-family: inherit;
+            font-size: inherit;
+        }
         
         .controls {
             display: flex;
@@ -119,13 +140,30 @@
         }
         
         button:hover { background-color: #219150; }
+        
         button:active { transform: scale(0.98); }
-        button.secondary { background-color: #3498db; }
+        
+        button.secondary {
+            background-color: #3498db;
+        }
+        
         button.secondary:hover { background-color: #2980b9; }
-        button.danger { background-color: #e74c3c; }
+        
+        button.danger {
+            background-color: #e74c3c;
+        }
+        
         button.danger:hover { background-color: #c0392b; }
         
-        #fileInput { display: none; }
+        #fileInput {
+            display: none;
+        }
+        
+        .status-info {
+            font-size: 12px;
+            color: #666;
+        }
+        
         h3 { color: #2c3e50; margin-top: 20px; }
         
         #console {
@@ -143,44 +181,157 @@
             resize: vertical;
             overflow-y: auto;
         }
+        
+        .error-line {
+            background-color: #ffcccc;
+        }
+        
+        /* Media Queries para Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                margin: 5px;
+            }
+            
+            .ide-container {
+                max-width: 100%;
+                gap: 10px;
+            }
+            
+            h1 {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+            
+            h3 {
+                font-size: 16px;
+            }
+            
+            #lineNumbers {
+                font-size: 12px;
+                padding: 8px 5px;
+                min-width: 35px;
+            }
+            
+            #editor {
+                height: 250px;
+                font-size: 12px;
+                padding: 8px;
+            }
+            
+            #highlighter {
+                font-size: 12px;
+                padding: 8px;
+            }
+            
+            #console {
+                height: 150px;
+                font-size: 11px;
+                padding: 8px;
+            }
+            
+            .controls {
+                gap: 5px;
+                justify-content: center;
+            }
+            
+            button {
+                padding: 8px 12px;
+                font-size: 12px;
+                flex: 1;
+                min-width: 80px;
+            }
+            
+            .editor-wrapper {
+                gap: 0;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                margin: 3px;
+            }
+            
+            .ide-container {
+                gap: 8px;
+            }
+            
+            h1 {
+                font-size: 18px;
+                margin-bottom: 6px;
+            }
+            
+            h3 {
+                font-size: 14px;
+                margin-top: 10px;
+            }
+            
+            #lineNumbers {
+                font-size: 10px;
+                padding: 6px 4px;
+                min-width: 30px;
+            }
+            
+            #editor {
+                height: 200px;
+                font-size: 11px;
+                padding: 6px;
+                line-height: 1.4;
+            }
+            
+            #highlighter {
+                font-size: 11px;
+                padding: 6px;
+            }
+            
+            #console {
+                height: 120px;
+                font-size: 10px;
+                padding: 6px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 6px;
+                justify-content: stretch;
+            }
+            
+            button {
+                width: 100%;
+                padding: 10px 8px;
+                font-size: 11px;
+            }
+            
+            .status-info {
+                font-size: 10px;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="ide-container">
-    <a href="/">
-        <img src="../static/logo.png" alt="Polite-C" style="display: block; margin: 0 auto; width: auto; height: auto;">
-    </a>
+<a href="/">
+  <img src="../static/logo.png" alt="Polite-C" style="display: block; margin: 0 auto; width: auto; height: auto;">
+</a>
     <div class="editor-wrapper">
         <div id="lineNumbers"></div>
-        <div id="editorContainer">
-            <div id="highlighter"></div>
-            <textarea id="editor" autocomplete="off" placeholder="Escribe tu código cortés aquí...">!comment "Mi primer programa estructurado en Polite C"
+        <div id="editorContainer" class="prism-editor">
+            <textarea id="editor" autocomplete="off" spellcheck="false" placeholder="Escribe tu código cortés aquí...">!comment "Mi primer programa estructurado en Polite C"
 
-hello main! please do this
-    please define edad as number
-    please define limite as number
-
-    please make limite equals to 18
-    
-    please say "Por favor ingrese su edad en el cuadro emergente"
-    please read edad
-
-    if this happens (edad >= limite) please do this
-        please say "Bienvenido. Acceso concedido de forma educada."
-    if not please do this
-        please say "Lo sentimos, eres menor de edad. Acceso denegado."
-    finish
+hello main! please do this:
+    please say: "Hola Mundo desde el mini IDE"
 thanks!</textarea>
         </div>
     </div>
     
-    <div class="controls" style="display: flex; width: 100%; gap: 10px;">
-        <button class="secondary" onclick="importCode()" title="Importar código desde un archivo .txt">Importar</button>
-        <button class="secondary" onclick="exportCode()" title="Exportar código como archivo .txt" style="margin-right: auto;">Exportar</button>
-        <button onclick="executeCode()" title="Ejecutar el código (Ctrl+Enter)">▶ Ejecutar</button>
-        <button class="danger" onclick="clearConsole()" title="Limpiar la consola">🗑 Limpiar</button>
-    </div>
+<div class="controls" style="display: flex; width: 100%; gap: 10px;">
+    <button class="secondary" onclick="importCode()" title="Importar código desde un archivo .txt">Importar</button>
+    <!-- Agregamos el margen automático a este segundo botón -->
+    <button class="secondary" onclick="exportCode()" title="Exportar código como archivo .txt" style="margin-right: auto;">Exportar</button>
+    
+    <button onclick="executeCode()" title="Ejecutar el código (Ctrl+Enter)">▶ Ejecutar</button>
+    <button class="danger" onclick="clearConsole()" title="Limpiar la consola">🗑 Limpiar</button>
+</div>
     
     <input type="file" id="fileInput" accept=".txt" onchange="handleFileImport(event)">
     
@@ -188,14 +339,32 @@ thanks!</textarea>
     <textarea id="console" readonly placeholder="Los resultados aparecerán aquí..."></textarea>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+
 <script>
+    // Definición del lenguaje Polite C para Prism
+    Prism.languages['polite_c'] = {
+        'comment': /!comment\s*"([^\\"]|\\.)*"/,
+        'string': /"([^\\"]|\\.)*"/,
+        'keyword': /\b(hello|main|please|do|this|define|as|number|floatnumber|word|say|read|if|happens|not|thanks|Class|class|finish|create|object|ask|with|to|make|equals|receives|give|back)\b/,
+        'number': /\b\d+(\.\d+)?\b/,
+        'operator': /==|!=|<=|>=|<|>|\+|-|\*|\/|%/,
+        'punctuation': /[(){}[\];:,]/
+    };
+
     const editor = document.getElementById('editor');
-    const highlighter = document.getElementById('highlighter');
+    const editorContainer = document.getElementById('editorContainer');
     const lineNumbers = document.getElementById('lineNumbers');
     const consoleOutput = document.getElementById('console');
     
     let currentInputs = {};
+    let isUpdating = false;
     
+    // Keywords de Polite C para syntax highlighting
+    const keywords = ['hello', 'main', 'please', 'do', 'this', 'say', 'thanks', 'comment', 'if', 'else', 'while', 'for'];
+    
+    // Actualizar números de línea
     function updateLineNumbers() {
         const lines = editor.value.split('\n').length;
         let lineNumbersHTML = '';
@@ -205,89 +374,104 @@ thanks!</textarea>
         lineNumbers.textContent = lineNumbersHTML;
     }
     
-    function updateHighlighting() {
-        let code = editor.value;
-        code = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    function highlightCode() {
+        isUpdating = true;
+        const code = editor.value;
         
-        // CORREGIDO: Resaltador léxico estricto para comentarios y cadenas
-        code = code.replace(/!comment.*$/gm, '<span class="comment">$&</span>');
-        code = code.replace(/"([^"]*)"/g, '<span class="string">"$1"</span>');
+        // Crear un elemento pre/code para que Prism lo procese
+        let preElement = editorContainer.querySelector('pre');
+        if (!preElement) {
+            preElement = document.createElement('pre');
+            preElement.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; margin: 0; padding: 10px; overflow: auto; pointer-events: none; z-index: 1; box-sizing: border-box; white-space: pre-wrap; word-wrap: break-word; font-family: "Courier New", Courier, monospace; font-size: 14px; line-height: 1.5; background: transparent; color: #f8f8f2;';
+            const codeElement = document.createElement('code');
+            codeElement.className = 'language-polite_c';
+            preElement.appendChild(codeElement);
+            editorContainer.insertBefore(preElement, editorContainer.firstChild);
+        }
         
-        // CORREGIDO: Mapeo de frases de cortesía unificadas de la Parte 1
-        const phrases = [
-            'hello main!',
-            'please do this',
-            'please define',
-            'please say',
-            'please read',
-            'thanks!',
-            'if this happens',
-            'if not',
-            'please make',
-            'equals to',
-            'please create',
-            'please ask',
-            'please give back'
-        ];
+        const codeElement = preElement.querySelector('code');
+        codeElement.textContent = code;
         
-        phrases.forEach(phrase => {
-            const regex = new RegExp(`\\b${phrase}\\b`, 'gi');
-            code = code.replace(regex, match => `<span class="keyword-phrase">${match}</span>`);
-        });
+        // Aplicar Prism highlight
+        Prism.highlightElement(codeElement);
         
-        const keywords = ['as', 'number', 'floatnumber', 'word', 'Class', 'class', 'finish', 'receives', 'with', 'to'];
-        keywords.forEach(keyword => {
-            const regex = new RegExp(`\\b${keyword}\\b`, 'g');
-            code = code.replace(regex, match => `<span class="keyword">${match}</span>`);
-        });
+        // Sincronizar scroll
+        preElement.scrollTop = editor.scrollTop;
+        preElement.scrollLeft = editor.scrollLeft;
         
-        highlighter.innerHTML = code;
+        isUpdating = false;
     }
     
+    // Sincronizar scroll entre editor y highlighter
     editor.addEventListener('scroll', function() {
-        highlighter.scrollTop = editor.scrollTop;
-        highlighter.scrollLeft = editor.scrollLeft;
+        const preElement = editorContainer.querySelector('pre');
+        if (preElement) {
+            preElement.scrollTop = editor.scrollTop;
+            preElement.scrollLeft = editor.scrollLeft;
+        }
+        updateLineNumbers();
     });
     
+    // Manejar Tab para indentación automática
     editor.addEventListener('keydown', function(e) {
         if (e.key === 'Tab') {
             e.preventDefault();
             const start = editor.selectionStart;
             const end = editor.selectionEnd;
+            
             if (start === end) {
+                // Insertar 4 espacios
                 editor.value = editor.value.substring(0, start) + '    ' + editor.value.substring(end);
                 editor.selectionStart = editor.selectionEnd = start + 4;
+            } else {
+                // Indentar múltiples líneas
+                const lines = editor.value.substring(0, end).split('\n');
+                const startLine = editor.value.substring(0, start).split('\n').length - 1;
+                const endLine = lines.length - 1;
+                
+                let newValue = editor.value.split('\n');
+                for (let i = startLine; i <= endLine; i++) {
+                    if (newValue[i]) newValue[i] = '    ' + newValue[i];
+                }
+                
+                editor.value = newValue.join('\n');
             }
         }
         
+        // Ctrl+Enter para ejecutar
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
             executeCode();
         }
         
-        // CORREGIDO: Auto-indentado al detectar la cláusula formal "please do this"
+        // Auto-indentado al detectar "please do this"
         if (e.key === 'Enter') {
             const start = editor.selectionStart;
             const textBeforeCursor = editor.value.substring(0, start);
             const lastLine = textBeforeCursor.split('\n').pop();
+            const indentMatch = lastLine.match(/^(\s*)/);
+            const currentIndent = indentMatch ? indentMatch[1] : '';
             
-            if (lastLine.trim().endsWith('please do this')) {
+            // Si la línea anterior termina con ":", agregar más indentación
+            if (lastLine.trim().endsWith(':')) {
                 setTimeout(() => {
                     const cursorPos = editor.selectionStart;
                     editor.value = editor.value.substring(0, cursorPos) + '    ' + editor.value.substring(cursorPos);
                     editor.selectionStart = editor.selectionEnd = cursorPos + 4;
                     updateLineNumbers();
-                    updateHighlighting();
+                    highlightCode();
                 }, 0);
             }
         }
     });
     
+    // Actualizar mientras se escribe
     editor.addEventListener('input', function() {
         updateLineNumbers();
-        updateHighlighting();
+        highlightCode();
     });
     
+    // Ejecutar código
     function executeCode(resumeVariable = null, resumeValue = null) {
         const codeContent = editor.value;
         
@@ -312,35 +496,49 @@ thanks!</textarea>
             consoleOutput.value = data.output;
             
             if (data.status === 'awaiting_input') {
-                const userInput = prompt(`[Polite C Input Required]\nPor favor, introduce un valor para la variable: ${data.variable}`);
+                const userInput = prompt(`[Polite C Input Required]\nPor favor, introduce un valor para: ${data.variable}`);
                 if (userInput !== null) {
                     executeCode(data.variable, userInput);
                 }
             } else if (data.status === 'completed') {
                 consoleOutput.value += "\n\n✅ --- Ejecución terminada con éxito. ¡Gracias! ---";
+            } else if (data.status === 'error') {
+                consoleOutput.value += "\n\n❌ --- Error en la ejecución ---";
             }
         })
         .catch(error => {
-            consoleOutput.value = "❌ Error de comunicación con Django: " + error;
+            consoleOutput.value = "❌ Error de comunicación: " + error;
         });
     }
     
-    function clearConsole() { consoleOutput.value = ''; }
-    function importCode() { document.getElementById('fileInput').click(); }
+    // Limpiar consola
+    function clearConsole() {
+        consoleOutput.value = '';
+    }
     
+    // Importar código desde archivo .txt
+    function importCode() {
+        document.getElementById('fileInput').click();
+    }
+    
+    // Manejar la importación de archivo
     function handleFileImport(event) {
         const file = event.target.files[0];
         if (!file) return;
+        
         const reader = new FileReader();
         reader.onload = function(e) {
             editor.value = e.target.result;
             updateLineNumbers();
-            updateHighlighting();
+            highlightCode();
         };
         reader.readAsText(file);
+        
+        // Limpiar el input para permitir reimportar el mismo archivo
         event.target.value = '';
     }
     
+    // Exportar código como archivo .txt
     function exportCode() {
         const codeContent = editor.value;
         const blob = new Blob([codeContent], { type: 'text/plain' });
@@ -352,10 +550,13 @@ thanks!</textarea>
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+        consoleOutput.value = '✅ Código exportado como "codigo_polite_c.txt".';
     }
     
+    // Inicialización
     updateLineNumbers();
-    updateHighlighting();
+    highlightCode();
 </script>
+
 </body>
 </html>
