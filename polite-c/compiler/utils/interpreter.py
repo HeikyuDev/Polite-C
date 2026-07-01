@@ -53,8 +53,7 @@ def p_statement(p):
                  | statement_assign
                  | statement_create
                  | method_call
-                 | statement_if
-                 | statement_else'''
+                 | statement_if'''
     p[0] = p[1]
 
 def p_statement_define(p):
@@ -96,12 +95,10 @@ def p_method_call(p):
 
 def p_method_definition_no_return(p):
     '''method_definition : ID RECEIVES LPAREN param_list RPAREN PLEASE_DO_THIS statement_list FINISH'''
-    # Estructura: (tipo, nombre, parametros, sentencias, expresion_retorno)
     p[0] = ('method_def', p[1], p[4], p[7], None)
 
 def p_method_definition_with_return(p):
     '''method_definition : ID RECEIVES LPAREN param_list RPAREN TO_GIVE type PLEASE_DO_THIS statement_list PLEASE_GIVE_BACK expression FINISH'''
-    # Estructura uniforme: guardamos las sentencias en la misma posicion
     p[0] = ('method_def', p[1], p[4], p[9], p[11])
 
 def p_param_list_empty(p):
@@ -149,12 +146,16 @@ def p_resto_expr(p):
     p[0] = [p[2]] + p[3]
 
 def p_statement_if(p):
-    '''statement_if : IF_HAPPENS LPAREN expression_relational RPAREN PLEASE_DO_THIS statement_list FINISH'''
-    p[0] = ('if_block', p[3], p[6])
+    '''statement_if : IF_HAPPENS LPAREN expression_relational RPAREN PLEASE_DO_THIS statement_list else_block FINISH'''
+    p[0] = ('if_block', p[3], p[6], p[7])
 
-def p_statement_else(p):
-    '''statement_else : IF_NOT PLEASE_DO_THIS statement_list FINISH'''
-    p[0] = ('else_block', p[3])
+def p_else_block_empty(p):
+    '''else_block : empty'''
+    p[0] = []
+
+def p_else_block(p):
+    '''else_block : IF_NOT PLEASE_DO_THIS statement_list'''
+    p[0] = p[3]
 
 def p_expression_relational(p):
     '''expression_relational : expression EQ expression
@@ -326,7 +327,6 @@ class PoliteInterpreter:
         class_body = self.classes_blueprints.get(obj.class_name, [])
         target_method = None
         for s in class_body:
-            # Buscamos el nodo unificado 'method_def' por su nombre
             if s[0] == 'method_def' and s[1] == method_name:
                 target_method = s
                 break
@@ -335,10 +335,8 @@ class PoliteInterpreter:
             self.output_buffer.append(f"Error: El método '{method_name}' no existe en la clase '{obj.class_name}'.")
             return None
             
-        # Desestructuración limpia y segura gracias al diseño uniforme
         _, _, params, method_statements, return_expr = target_method
         
-        # El contexto local opera sobre los atributos del objeto para que pueda mutar su estado
         local_memory = obj.fields
         evaluated_args = [self.evaluate_expression(a, current_context) for a in args]
         
@@ -346,13 +344,11 @@ class PoliteInterpreter:
             if idx < len(evaluated_args):
                 local_memory[param_node[1]] = evaluated_args[idx]
                 
-        # Ejecutamos las sentencias internas
         res = self.run_statements(method_statements, user_inputs, current_context=local_memory)
         
         if res and isinstance(res, dict) and res.get('status') == 'awaiting_input':
             return res
             
-        # Si el método fue definido con retorno, resolvemos la expresión sobre su memoria local
         if return_expr is not None:
             return {'return_value': self.evaluate_expression(return_expr, local_memory)}
             
@@ -411,19 +407,14 @@ class PoliteInterpreter:
                 current_context[var_name] = self.evaluate_expression(stmt[2], current_context)
                     
             elif stmt_type == 'if_block':
-                _, cond, if_statements = stmt
+                _, cond, if_statements, else_statements = stmt
                 if self.evaluate_condition(cond, current_context):
-                    self.last_if_condition = True
                     res = self.run_statements(if_statements, user_inputs, current_context)
                     if res and res['status'] == 'awaiting_input': return res
                 else:
-                    self.last_if_condition = False
-                    
-            elif stmt_type == 'else_block':
-                _, else_statements = stmt
-                if not self.last_if_condition:
-                    res = self.run_statements(else_statements, user_inputs, current_context)
-                    if res and res['status'] == 'awaiting_input': return res
+                    if else_statements:
+                        res = self.run_statements(else_statements, user_inputs, current_context)
+                        if res and res['status'] == 'awaiting_input': return res
 
         return {
             'status': 'completed',
