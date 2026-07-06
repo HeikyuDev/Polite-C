@@ -1,0 +1,12 @@
+hello main! please do this
+    please define edad as number
+    
+    please say "Ingrese su edad por teclado: "
+    please read edad
+    
+    if this happens (edad >= 18) please do this
+        please say "El usuario es mayor de edad."
+    if not please do this
+        please say "El usuario es menor de edad."
+    finish
+thanks!
