@@ -1,4 +1,23 @@
-# Polite C Compiler
+<p align="center">
+  <img src="imagenesDemo/logo.png" alt="Polite-C Logo" width="280">
+</p>
+
+<h1 align="center">Polite C Compiler</h1>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Django-6.0-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django">
+  <img src="https://img.shields.io/badge/PLY_(Lex_Yacc)-3.11-2077B4?style=for-the-badge&logo=python&logoColor=white" alt="PLY">
+  <img src="https://img.shields.io/badge/Grammar-LALR(1)-D4AF37?style=for-the-badge&logo=read-the-docs&logoColor=black" alt="LALR1">
+</p>
+
+<p align="center">
+  <strong>Un mini-lenguaje orientado a objetos con sintaxis conversacional y educada.</strong>
+  <br />
+  Desarrollado para la cátedra de Teoría de la Computación — Universidad Nacional de Misiones.
+</p>
+
+---
 
 **Polite C Compiler** es una aplicación web desarrollada con **Django** para analizar código escrito en **Polite C**, un mini-lenguaje de programación orientado a objetos con sintaxis conversacional.
 
@@ -14,27 +33,20 @@ El objetivo principal es facilitar la comprensión de conceptos relacionados con
 
 ---
 
-## Ejemplo de código Polite C
+## Ejemplo de código Polite C (Validador de Edad)
 
-```txt
-Class GeneradorDeMensajes please do this
-    please define numero as number
-
-    procesarDato receives () please do this
-        please say "Ingrese un número por teclado"
-        please read numero
-
-        if this happens (numero == 0) please do this
-            please say "Error, el número no puede ser cero"
-        if not please do this
-            please say "El número ingresado es válido"
-        finish
-    finish
-finish
-
+```c
 hello main! please do this
-    please create miGenerador as GeneradorDeMensajes
-    please ask miGenerador to procesarDato
+    please define edad as number
+    
+    please say "Ingrese su edad por teclado: "
+    please read edad
+    
+    if this happens (edad >= 18) please do this
+        please say "El usuario es mayor de edad."
+    if not please do this
+        please say "El usuario es menor de edad."
+    finish
 thanks!
 ```
 
@@ -44,10 +56,31 @@ thanks!
 
 - Recepción de código fuente Polite C desde el cliente.
 - Procesamiento del código en el servidor.
-- Identificación de tokens mediante un analizador léxico.
-- Preparación para el análisis sintáctico mediante una gramática libre de contexto.
-- Separación del proyecto en módulos para facilitar el mantenimiento.
-- Base para construir una interfaz web tipo mini IDE.
+- Identificación de tokens mediante un analizador léxico en `lexer.py`.
+- Preparación para el análisis sintáctico mediante una gramática libre de contexto en `interpreter.py`.
+- Separación del proyecto en módulos limpios dentro de una arquitectura Django.
+- Interfaz web interactiva tipo mini IDE para pruebas en tiempo real.
+
+---
+
+## Funcionamiento e Interfaz (Demo)
+
+El Mini IDE de Polite C cuenta con una interfaz web responsiva orientada a la educación, permitiendo analizar la estructura del lenguaje conversacional en tiempo real y devolviendo diagnósticos limpios desde el servidor.
+
+### 1. Ejecución Exitosa (Caso Feliz)
+Al introducir un código fuente semánticamente válido, el compilador procesa las cadenas a través de los pasillos de control y acepta la estructura formal.
+
+![Análisis Sintáctico Exitoso](imagenesDemo/Exito.jpeg)
+
+### 2. Gestión de Errores Léxicos
+Si el usuario introduce un carácter ilegal (como `@` o `$` que no pertenecen al alfabeto del lenguaje), la función de control léxico detiene el flujo e informa la anomalía de inmediato sin colapsar el sistema.
+
+![Captura de Error Léxico](imagenesDemo/ErrorLexico.jpeg)
+
+### 3. Gestión de Errores Sintácticos
+Cuando el orden de los tokens rompe las reglas establecidas en la gramática libre de contexto (notación BNF), el algoritmo LALR(1) detecta el conflicto y reporta en qué token específico se perdió la coherencia de la oración.
+
+![Captura de Error Sintáctico](imagenesDemo/ErrorSintactico.jpeg)
 
 ---
 
@@ -55,192 +88,144 @@ thanks!
 
 - Python
 - Django
+- PLY (Python Lex-Yacc)
 - HTML
 - CSS
 - JavaScript
 
 ---
 
-## Estructura sugerida del proyecto
+## Estructura Real del Proyecto
 
 ```txt
 Polite-C/
 │
-├── config/
-│   ├── settings.py
-│   ├── urls.py
-│   ├── asgi.py
-│   └── wsgi.py
-│
-├── compiler/
-│   ├── lexer/
-│   │   ├── __init__.py
-│   │   ├── token.py
-│   │   └── lexer.py
-│   │
-│   ├── parser/
-│   │   ├── __init__.py
-│   │   └── parser.py
-│   │
-│   ├── services/
-│   │   └── compiler_service.py
-│   │
-│   ├── views.py
-│   ├── urls.py
-│   └── tests.py
-│
-├── manage.py
-├── requirements.txt
-├── .gitignore
-└── README.md
+└── polite-c/                  # Carpeta raíz del proyecto Django
+    ├── config/
+    │   ├── settings.py
+    │   ├── urls.py
+    │   ├── asgi.py
+    │   └── wsgi.py
+    │
+    ├── compiler/
+    │   ├── utils/             # Módulos de compilación basados en PLY
+    │   │   ├── __init__.py
+    │   │   ├── lexer.py       # Analizador Léxico (Tokens y Regex)
+    │   │   └── interpreter.py # Analizador Sintáctico (Gramática BNF y Parser)
+    │   │
+    │   ├── views.py           # Orquestación de peticiones HTTP/JSON
+    │   ├── urls.py            # Enrutamiento de la aplicación
+    │   └── tests.py
+    │
+    ├── static/                # Recursos visuales del Mini IDE
+    │   ├── logo.png
+    │   └── icon.png
+    │
+    ├── templates/
+    │   └── index.html         # Interfaz del editor web
+    │
+    ├── manage.py
+    └── requirements.txt
 ```
 
 ---
 
 ## Instalación y ejecución
 
-### 1. Clonar el repositorio
+### 1. Clonar el repositorio e ingresar a la carpeta del proyecto
+Es importante ingresar a la subcarpeta interna `polite-c`, ya que allí se encuentran el archivo de dependencias y el entorno ejecutable de Django.
 
 ```bash
-git clone https://github.com/HeikyuDev/Polite-C.git
-cd Polite-C
+git clone [https://github.com/HeikyuDev/Polite-C.git](https://github.com/HeikyuDev/Polite-C.git)
+cd Polite-C/polite-c
 ```
 
 ### 2. Crear el entorno virtual
 
-En Windows:
-
+En Windows (PowerShell):
 ```bash
 python -m venv venv
 ```
 
 En Linux o macOS:
-
 ```bash
 python3 -m venv venv
 ```
 
 ### 3. Activar el entorno virtual
 
-En PowerShell:
-
+En Windows (PowerShell):
 ```bash
 .\venv\Scripts\Activate.ps1
 ```
 
-En CMD:
-
+En Windows (CMD):
 ```bash
 venv\Scripts\activate
 ```
 
 En Linux o macOS:
-
 ```bash
 source venv/bin/activate
 ```
 
 ### 4. Instalar dependencias
-
+Con el entorno virtual activado, instalá los paquetes requeridos (Django, PLY, etc.):
 ```bash
 pip install -r requirements.txt
 ```
 
 Si el archivo `requirements.txt` todavía no existe, se puede generar con:
-
 ```bash
 pip freeze > requirements.txt
 ```
 
-### 5. Ejecutar migraciones
-
+### 5. Ejecutar migraciones base
 ```bash
 python manage.py migrate
 ```
 
-### 6. Iniciar el servidor
-
+### 6. Iniciar el servidor de desarrollo
 ```bash
 python manage.py runserver
 ```
 
-Luego abrir en el navegador:
-
-```txt
-http://127.0.0.1:8000/
-```
-
----
-
-## Entorno virtual y Git
-
-La carpeta del entorno virtual no debe subirse al repositorio. Por eso debe estar incluida en el archivo `.gitignore`.
-
-Ejemplo:
-
-```gitignore
-# Entorno virtual
-venv/
-.venv/
-env/
-
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-
-# Django
-db.sqlite3
-*.log
-
-# Variables de entorno
-.env
-
-# Sistema operativo
-.DS_Store
-Thumbs.db
-```
+Luego abrir en el navegador: `http://127.0.0.1:8000/`
 
 ---
 
 ## Flujo general de funcionamiento
 
 ```txt
-Cliente web
+Cliente web (Mini IDE)
     ↓
-Envía código fuente como cadena de caracteres
+Envía código fuente como cadena de caracteres mediante POST
     ↓
-Servidor Django
+Servidor Django (Views)
     ↓
-Analizador léxico
+Analizador léxico (utils/lexer.py) -> Lista de tokens
     ↓
-Lista de tokens
+Analizador sintáctico (utils/interpreter.py) -> Construcción del AST
     ↓
-Analizador sintáctico
-    ↓
-Resultado del análisis o mensajes de error
+Retorno de resultado semántico o traza limpia de error al usuario
 ```
 
 ---
 
 ## Objetivo académico
 
-Este proyecto forma parte del desarrollo de un mini-lenguaje orientado a objetos para aplicar conceptos de **Teoría de la Computación**, principalmente:
+Este proyecto forma parte del desarrollo de un mini-lenguaje orientado a objetos para aplicar conceptos prácticos de **Teoría de la Computación**, abarcando:
 
-- definición y clasificación de tokens;
-- expresiones regulares;
-- análisis léxico;
-- autómatas finitos;
-- gramáticas libres de contexto;
-- análisis sintáctico.
+- Definición y clasificación de tokens formales.
+- Expresiones regulares aplicadas a cadenas de texto.
+- Análisis léxico mediante autómatas finitos.
+- Gramáticas libres de contexto y análisis sintáctico ascendente.
 
 ---
 
 ## Estado del proyecto
 
-Proyecto en desarrollo.
-
-Actualmente se está preparando la base del servidor Django y la estructura necesaria para implementar el analizador léxico y el analizador sintáctico de Polite C.
+Proyecto funcional con servidor web integrado. Actualmente se soporta el procesamiento léxico completo y la resolución sintáctica de estructuras de control básicas y estructuras de objetos a través del motor PLY.
 
 ---
 
@@ -248,3 +233,4 @@ Actualmente se está preparando la base del servidor Django y la estructura nece
 
 **Grupo 04 - Teoría de la Computación**  
 Universidad Nacional de Misiones
+```
